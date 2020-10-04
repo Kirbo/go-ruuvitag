@@ -20,17 +20,6 @@ install:
 install-go:
 	bash scripts/install-go.sh
 
-compile: compile-client compile-server
-
-compile-client:
-	echo "Compiling Client for ARM"
-	GOOS=linux GOARCH=arm go build -o bin/client cmd/client/*.go
-	sudo setcap cap_net_raw,cap_net_admin+eip bin/client
-
-compile-server:
-	echo "Compiling Server for ARM"
-	GOOS=linux GOARCH=arm go build -o bin/server cmd/server/*.go
-
 run-compiled-client:
 	chmod +x bin/client
 	./bin/client
@@ -39,8 +28,25 @@ run-compiled-server:
 	chmod +x bin/server
 	./bin/server
 
-client: install compile-client run-compiled-client
+client: install build-client run-compiled-client
 
-server: install compile-server run-compiled-server
+server: install build-server run-compiled-server
 
-server-devaus: install build-server run-compiled-server
+
+startup-client:
+	sudo bash scripts/install-client-startup.sh ${HOME}
+
+startup-server:
+	sudo bash scripts/install-server-startup.sh ${HOME}
+
+logs-client:
+	sudo journalctl -u ruuvitag-client.service
+
+logs-server:
+	sudo journalctl -u ruuvitag-server.service
+
+follow-client:
+	sudo journalctl -u ruuvitag-client.service --follow
+
+follow-server:
+	sudo journalctl -u ruuvitag-server.service --follow

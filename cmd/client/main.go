@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -20,11 +21,12 @@ import (
 
 // Cache for variables
 var (
-	Cache  = cache.New(0, 0)
+	rdb    *redis.Client
 	config models.JsonDevices
 
-	ctx = context.Background()
-	rdb *redis.Client
+	Cache    *cache.Cache    = cache.New(0, 0)
+	ctx      context.Context = context.Background()
+	interval time.Time       = time.Minute
 )
 
 func connectRedis() {
@@ -70,7 +72,7 @@ func loadConfigs() {
 }
 
 func startTickers() {
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(interval)
 	done := make(chan bool)
 	go func() {
 		for {
@@ -89,13 +91,15 @@ func createInserts() {
 	for i := range config {
 		sensor := &config[i]
 
-		val, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, sensor.ID)).Result()
+		oldID := parseOldID(sensor.ID)
+
+		val, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
 		if err != nil {
 			log.Printf("No data found for: %s", sensor.Name)
 			return
 		}
 
-		if err = setAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), sensor.ID), val); err != nil {
+		if err = setAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), oldID), val); err != nil {
 			panic(err)
 		}
 	}
@@ -121,16 +125,22 @@ func makeTimestamp() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
+func parseOldID(id string) string {
+	return strings.ToLower(strings.Replace(id, ":", "", -1))
+}
+
 func handler(data ruuvitag.Measurement) {
 	var (
-		address = data.DeviceID()
-		ping    = int64(0)
-		name    = ""
+		address    = data.DeviceID()
+		addressOld = parseOldID(address)
+		ping       = int64(0)
+		name       = ""
 	)
 
+	timestamp := makeTimestamp()
 	if value, found := Cache.Get(fmt.Sprintf("lastTimestamp:%s", address)); found {
 		var lastTimestamp = value.(int64)
-		ping = makeTimestamp() - lastTimestamp
+		ping = timestamp - lastTimestamp
 	}
 
 	if value, found := Cache.Get(fmt.Sprintf("name:%s", address)); found {
@@ -138,8 +148,9 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	var device = models.Device{
-		ID:   address,
-		Name: name,
+		ID:    address,
+		OldID: addressOld,
+		Name:  name,
 	}
 
 	var deviceStub = models.Device{
@@ -147,8 +158,9 @@ func handler(data ruuvitag.Measurement) {
 		Format:      data.Format(),
 		Humidity:    data.Humidity(),
 		Temperature: data.Temperature(),
-		Pressure:    data.Pressure(),
-		Timestamp:   makeTimestamp(),
+		Pressure:    float32(data.Pressure()) / float32(100),
+		Timestamp:   timestamp,
+		TimestampZ:  time.Unix(int64(time.Duration(timestamp/1000)), 0).Format(time.RFC3339),
 		Acceleration: models.DeviceAcceleration{
 			X: data.AccelerationX(),
 			Y: data.AccelerationY(),
@@ -162,7 +174,7 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	Cache.Set(fmt.Sprintf("%s%s", channels.Device, address), device, cache.NoExpiration)
-	Cache.Set(fmt.Sprintf("lastTimestamp:%s", address), makeTimestamp(), cache.NoExpiration)
+	Cache.Set(fmt.Sprintf("lastTimestamp:%s", address), timestamp, cache.NoExpiration)
 
 	log.Printf("%s[v%d] %s : %+v", address, data.Format(), name, deviceStub)
 
@@ -171,7 +183,7 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
-	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, address), string(redisData)); err != nil {
+	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
 		panic(err)
 	}
 }

@@ -23,14 +23,6 @@ CREATE TABLE public.ruuvitag (
 CREATE INDEX ruuvitag_metric ON ruuvitag USING btree (metric);
 CREATE INDEX ruuvitag_tag_id ON ruuvitag USING btree ("tagId");
 CREATE INDEX ruuvitag_time ON ruuvitag USING btree ("time");
-CREATE INDEX ruuvitag_time_idx ON ruuvitag USING btree ("time", metric, "tagId");
-
-CREATE TABLE public.ruuvitag_1 (
-	id bigserial NOT NULL,
-	"time" timestamptz NOT NULL,
-	metric varchar(255) NOT NULL,
-	"tagId" varchar(255) NOT NULL,
-	value numeric NOT NULL
-);
+CREATE UNIQUE INDEX ruuvitag_time_idx ON ruuvitag USING btree ("time", metric, "tagId");
 
 COMMIT;
