@@ -237,13 +237,17 @@ func deleteKey(key string) {
 		return
 	}
 
-	for {
+	for i := 0; i < 60; i++ {
 		log.Printf("key %s retry in second", key)
 		time.Sleep(time.Second)
 		status = rdb.Del(ctx, key)
 		log.Printf("key %s status %s", key, status)
 		if status.Val() == 1 {
 			break
+		}
+
+		if i == 60 {
+			panic(fmt.Sprintf("Error with key %s status %s", key, status))
 		}
 	}
 }
