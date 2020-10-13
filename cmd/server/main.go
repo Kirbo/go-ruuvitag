@@ -264,7 +264,7 @@ func handleBuffer() {
 				log.Printf("No data found for: %s", key)
 				return
 			}
-			handleRow(key, payload)
+			go handleRow(key, payload)
 		}
 		if err := iter.Err(); err != nil {
 			panic(err)
