@@ -90,25 +90,6 @@ func connectMQTT() {
 		}
 
 		mqttEnabled = true
-		
-		for i := range config {
-			sensor := &config[i]
-
-			oldID := parseOldID(sensor.ID)
-
-			row, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
-			if err != nil {
-				log.Printf("No data found for: %s", sensor.Name)
-				return
-			}
-
-			device, err := parseMessage(row)
-			if err != nil {
-				panic(err)
-			}
-
-			broadcastMQTTNames(device)
-		}
 	}
 }
 
@@ -146,8 +127,6 @@ func loadConfigs() {
 				battery             = device.Battery
 			)
 			
-			broadcastMQTTNames(device)
-
 			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", ping, name, temperature, humidity, pressure, battery))
 		}
 	}
@@ -325,73 +304,16 @@ func broadcastDevice(row string) {
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
 }
 
-func broadcastMQTTNames(device models.Device) {
-	if mqttEnabled {
-		topicN := fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
-		mqttClient.Publish(topicN, 0, true, device.Name)
-	}
-}
-
 func broadcastMQTTDevice(device models.Device) {
 	if mqttEnabled {
-		// var (
-		// 	battery     = device.Battery
-		// 	humidity    = device.Humidity
-		// 	pressure    = device.Pressure
-		// 	temperature = device.Temperature
-		// 	x           = device.Acceleration.X
-		// 	y           = device.Acceleration.Y
-		// 	z           = device.Acceleration.Z
-
-		// 	topicB = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "battery")
-		// 	topicH = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "humidity")
-		// 	topicP = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "pressure")
-		// 	topicT = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "temperature")
-		// 	topicX = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "x")
-		// 	topicY = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "y")
-		// 	topicZ = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "z")
-		// )
-
-		// retainMessages := mqttConfig.RetainMessages
-
-		// if mqttConfig.EnabledMetrics.Battery {
-		// 	mqttClient.Publish(topicB, 0, retainMessages, fmt.Sprintf("%v", battery))
-		// }
-		// if mqttConfig.EnabledMetrics.Humidity {
-		// 	mqttClient.Publish(topicH, 0, retainMessages, fmt.Sprintf("%v", humidity))
-		// }
-		// if mqttConfig.EnabledMetrics.Pressure {
-		// 	mqttClient.Publish(topicP, 0, retainMessages, fmt.Sprintf("%v", pressure))
-		// }
-		// if mqttConfig.EnabledMetrics.Battery {
-		// 	mqttClient.Publish(topicT, 0, retainMessages, fmt.Sprintf("%v", temperature))
-		// }
-		// if mqttConfig.EnabledMetrics.X {
-		// 	mqttClient.Publish(topicX, 0, retainMessages, fmt.Sprintf("%v", x))
-		// }
-		// if mqttConfig.EnabledMetrics.Y {
-		// 	mqttClient.Publish(topicY, 0, retainMessages, fmt.Sprintf("%v", y))
-		// }
-		// if mqttConfig.EnabledMetrics.Z {
-		// 	mqttClient.Publish(topicZ, 0, retainMessages, fmt.Sprintf("%v", z))
-		// }
-
 		topic := fmt.Sprintf("ruuvitag/%v", device.ID)
-		broadcastMsg := broadcastMessage(device)
 
-		fmt.Printf("broadcastMsg %+v\n", broadcastMsg)
-
-		token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
-        token.Wait()
-
-        redisData, err := json.Marshal(device)
+        broadcastMsg, err := json.Marshal(device)
         if err != nil {
             panic(err)
         }
 
-        fmt.Printf("redisData %+v\n", redisData)
-        
-        token = mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, redisData)
+        token = mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 		token.Wait()
 	}
 }
