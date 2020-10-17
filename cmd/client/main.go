@@ -89,6 +89,25 @@ func connectMQTT() {
 			log.Fatal(err)
 		}
 
+		for i := range config {
+			sensor := &config[i]
+
+			oldID := parseOldID(sensor.ID)
+
+			row, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
+			if err != nil {
+				log.Printf("No data found for: %s", sensor.Name)
+				return
+			}
+
+			device, err := parseMessage(row)
+			if err != nil {
+				panic(err)
+			}
+
+			broadcastMQTTNames(device)
+		}
+
 		mqttEnabled = true
 	}
 }
@@ -127,10 +146,7 @@ func loadConfigs() {
 				battery             = device.Battery
 			)
 			
-			if mqttEnabled {
-				topicN := fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
-				mqttClient.Publish(topicN, 0, true, device.Name)
-			}
+			broadcastMQTTNames(device)
 
 			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", ping, name, temperature, humidity, pressure, battery))
 		}
@@ -307,6 +323,13 @@ func broadcastDevice(row string) {
 	broadcastMsg := broadcastMessage(device)
 
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
+}
+
+func broadcastMQTTNames(device models.Device) {
+	if mqttEnabled {
+		topicN := fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
+		mqttClient.Publish(topicN, 0, true, device.Name)
+	}
 }
 
 func broadcastMQTTDevice(device models.Device) {
