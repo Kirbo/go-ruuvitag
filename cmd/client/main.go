@@ -317,6 +317,7 @@ func broadcastMQTTDevice(device models.Device) {
 
 			topicB = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "battery")
 			topicH = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "humidity")
+			topicN = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
 			topicP = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "pressure")
 			topicT = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "temperature")
 			topicX = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "x")
@@ -325,6 +326,8 @@ func broadcastMQTTDevice(device models.Device) {
 		)
 
 		retainMessages := mqttConfig.RetainMessages
+
+		mqttClient.Publish(topicN, 0, true, device.Name)
 
 		if mqttConfig.EnabledMetrics.Battery {
 			mqttClient.Publish(topicB, 0, retainMessages, fmt.Sprintf("%v", battery))
