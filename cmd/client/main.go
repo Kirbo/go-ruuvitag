@@ -324,7 +324,7 @@ func broadcastMQTTDevice(device models.Device) {
 			topicZ = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "z")
 		)
 
-		retainMessages := mqtt.RetainMessages
+		retainMessages := mqttConfig.RetainMessages
 
 		if mqttConfig.EnabledMetrics.Battery {
 			mqttClient.Publish(topicB, 0, retainMessages, fmt.Sprintf("%v", battery))
