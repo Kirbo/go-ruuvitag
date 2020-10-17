@@ -466,9 +466,9 @@ func handler(data ruuvitag.Measurement) {
 }
 
 func main() {
+	loadConfigs()
 	connectRedis()
 	connectMQTT()
-	loadConfigs()
 	go startSocketIOServer()
 	startTickers()
 
