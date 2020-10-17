@@ -92,6 +92,8 @@ func connectMQTT() {
 		for i := range config {
 			sensor := &config[i]
 
+			oldID := parseOldID(sensor.ID)
+
 			row, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
 			if err != nil {
 				log.Printf("No data found for: %s", sensor.Name)
@@ -103,7 +105,7 @@ func connectMQTT() {
 				panic(err)
 			}
 
-			topicN = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
+			topicN := fmt.Sprintf("ruuvitag/%v/%s", device.ID, "name")
 			mqttClient.Publish(topicN, 0, true, device.Name)
 		}
 
