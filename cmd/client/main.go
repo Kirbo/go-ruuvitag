@@ -109,7 +109,7 @@ func connectMQTT() {
 			mqttClient.Publish(topicN, 0, true, device.Name)
 		}
 
-		mqttEnabled = true
+		// mqttEnabled = true
 	}
 }
 
