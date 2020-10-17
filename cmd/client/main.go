@@ -378,6 +378,9 @@ func broadcastMQTTDevice(device models.Device) {
 
 		topic := fmt.Sprintf("ruuvitag/%v", device.ID)
 		broadcastMsg := broadcastMessage(device)
+
+		fmt.Printf("broadcastMsg %+v\n", broadcastMsg)
+
 		token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 		token.Wait()
 	}
