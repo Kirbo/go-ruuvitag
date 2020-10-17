@@ -306,6 +306,8 @@ func broadcastDevice(row string) {
 
 func broadcastMQTTDevice(device models.Device) {
 	if mqttEnabled {
+		fmt.Println("mqtt enabled, publishing")
+
 		var (
 			battery      = device.Battery
 			humidity     = device.Humidity
@@ -327,6 +329,8 @@ func broadcastMQTTDevice(device models.Device) {
 		mqttClient.Publish(topicH, 0, true, humidity)
 		mqttClient.Publish(topicP, 0, true, pressure)
 		mqttClient.Publish(topicT, 0, true, temperature)
+	} else {
+		fmt.Println("mqtt not enabled")
 	}
 }
 
