@@ -309,31 +309,34 @@ func broadcastMQTTDevice(device models.Device) {
 		fmt.Println("mqtt enabled, publishing")
 
 		var (
-			battery      = device.Battery
-			humidity     = device.Humidity
-			pressure     = device.Pressure
-			temperature  = device.Temperature
-			acceleration = device.Acceleration
+			battery     = device.Battery
+			humidity    = device.Humidity
+			pressure    = device.Pressure
+			temperature = device.Temperature
+			x           = device.Acceleration.X
+			y           = device.Acceleration.Y
+			z           = device.Acceleration.Z
 
 			topic = "ruuvitag/" + device.ID + "/"
 
-			topicA = topic + "acceleration"
-			topicB = topic + "battery"
-			topicH = topic + "humidity"
-			topicP = topic + "pressure"
-			topicT = topic + "temperature"
+			topicB = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "battery")
+			topicH = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "humidity")
+			topicP = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "pressure")
+			topicT = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "temperature")
+			topicX = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "x")
+			topicY = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "y")
+			topicZ = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "z")
 		)
 
 		fmt.Println("topicT", topicT, temperature)
 
-		mqttClient.Publish("connected", 0, false, "jooo")
-		mqttClient.Publish("connected", 0, true, "jep")
-
-		mqttClient.Publish(topicA, 0, true, acceleration)
-		mqttClient.Publish(topicB, 0, true, battery)
-		mqttClient.Publish(topicH, 0, true, humidity)
-		mqttClient.Publish(topicP, 0, true, pressure)
-		mqttClient.Publish(topicT, 0, true, temperature)
+		mqttClient.Publish(topicB, 0, true, string(battery))
+		mqttClient.Publish(topicH, 0, true, string(humidity))
+		mqttClient.Publish(topicP, 0, true, string(pressure))
+		mqttClient.Publish(topicT, 0, true, string(temperature))
+		mqttClient.Publish(topicX, 0, true, string(x))
+		mqttClient.Publish(topicY, 0, true, string(y))
+		mqttClient.Publish(topicZ, 0, true, string(z))
 	} else {
 		fmt.Println("mqtt not enabled")
 	}
