@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -26,9 +28,11 @@ import (
 
 // Cache for variables
 var (
-	rdb    *redis.Client
-	config models.JsonDevices
-	server *socketio.Server
+	rdb        *redis.Client
+	config     models.JsonDevices
+	mqttConfig models.MQTTConfig
+	server     *socketio.Server
+	client     mqtt.Client
 
 	Cache        *cache.Cache    = cache.New(0, 0)
 	ctx          context.Context = context.Background()
@@ -51,6 +55,34 @@ func connectRedis() {
 		Password: redisPassword,
 		DB:       0,
 	})
+}
+
+func connectMQTT() {
+	if mqttConfig.Host != nil {
+		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", config.User.Username, config.User.Password, config.Host, config.Port)
+		fmt.Printf("uriString: %s\n", uriString)
+
+		uri, err := url.Parse(uriString)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("uri: %+v\n", uri)
+
+		client = connect("pub", uri)
+	}
+}
+
+func loadMQTTConfigs() {
+	if _, err := os.Stat("./mqtt.json"); err == nil {
+		jsonFile, err := os.Open("./mqtt.json")
+		if err != nil {
+			fmt.Print(err)
+		}
+
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &mqttConfig)
+	}
 }
 
 func loadConfigs() {
@@ -253,6 +285,32 @@ func broadcastDevice(row string) {
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
 }
 
+func broadcastMQTTDevice(device models.Device) {
+	if client != nil {
+		var (
+			battery      = device.Battery
+			humidity     = device.Humidity
+			pressure     = device.Pressure
+			temperature  = device.Temperature
+			acceleration = device.Acceleration
+
+			topic = "ruuvitag/" + data.DeviceID() + "/"
+
+			topicA = topic + "acceleration"
+			topicB = topic + "battery"
+			topicH = topic + "humidity"
+			topicP = topic + "pressure"
+			topicT = topic + "t"
+		)
+
+		client.Publish(topicA, 0, true, acceleration)
+		client.Publish(topicB, 0, true, battery)
+		client.Publish(topicH, 0, true, humidity)
+		client.Publish(topicP, 0, true, pressure)
+		client.Publish(topicT, 0, true, temperature)
+	}
+}
+
 func initialDataForWebClient() (devices []models.BroadcastMessage, err error) {
 	iter := rdb.Scan(ctx, 0, fmt.Sprintf("%s%s", channels.Device, "*"), 1).Iterator()
 	for iter.Next(ctx) {
@@ -333,6 +391,7 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	broadcastDevice(string(redisData))
+	broadcastMQTTDevice(device)
 
 	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
 		panic(err)
@@ -353,6 +412,6 @@ func main() {
 	output := scanner.Start()
 	for {
 		data := <-output
-		handler(data)
+		go handler(data)
 	}
 }
