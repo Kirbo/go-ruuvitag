@@ -324,6 +324,8 @@ func broadcastMQTTDevice(device models.Device) {
 			topicT = topic + "temperature"
 		)
 
+		fmt.Println("topicT", topicT, temperature)
+
 		mqttClient.Publish(topicA, 0, true, acceleration)
 		mqttClient.Publish(topicB, 0, true, battery)
 		mqttClient.Publish(topicH, 0, true, humidity)
