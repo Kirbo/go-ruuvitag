@@ -315,8 +315,6 @@ func broadcastMQTTDevice(device models.Device) {
 			y           = device.Acceleration.Y
 			z           = device.Acceleration.Z
 
-			topic = "ruuvitag/" + device.ID + "/"
-
 			topicB = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "battery")
 			topicH = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "humidity")
 			topicP = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "pressure")
