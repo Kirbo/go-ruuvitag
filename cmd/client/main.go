@@ -457,8 +457,8 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
-	broadcastDevice(string(redisData))
-	// broadcastMQTTDevice(device)
+	go broadcastDevice(string(redisData))
+	go broadcastMQTTDevice(device)
 
 	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
 		panic(err)
