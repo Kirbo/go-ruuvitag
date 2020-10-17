@@ -313,7 +313,7 @@ func broadcastMQTTDevice(device models.Device) {
             panic(err)
         }
 
-        token = mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
+        token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 		token.Wait()
 	}
 }
