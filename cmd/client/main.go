@@ -89,6 +89,8 @@ func connectMQTT() {
 			log.Fatal(err)
 		}
 
+		mqttClient.Publish("connected", 0, false, "jooo")
+
 		mqttEnabled = true
 	}
 }
