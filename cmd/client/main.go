@@ -58,7 +58,7 @@ func connectRedis() {
 }
 
 func connectMQTT() {
-	if mqttConfig && mqttConfig.Host != "" {
+	if mqttConfig.Host != "" {
 		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", mqttConfig.User.Username, mqttConfig.User.Password, mqttConfig.Host, mqttConfig.Port)
 		fmt.Printf("uriString: %s\n", uriString)
 
