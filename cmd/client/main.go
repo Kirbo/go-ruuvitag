@@ -58,8 +58,8 @@ func connectRedis() {
 }
 
 func connectMQTT() {
-	if mqttConfig.Host != nil {
-		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", config.User.Username, config.User.Password, config.Host, config.Port)
+	if mqttConfig != nil {
+		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", mqttConfig.User.Username, mqttConfig.User.Password, mqttConfig.Host, mqttConfig.Port)
 		fmt.Printf("uriString: %s\n", uriString)
 
 		uri, err := url.Parse(uriString)
@@ -71,6 +71,32 @@ func connectMQTT() {
 
 		client = connect("pub", uri)
 	}
+}
+
+func connect(clientId string, uri *url.URL) mqtt.Client {
+	opts := createClientOptions(clientId, uri)
+	client := mqtt.NewClient(opts)
+	token := client.Connect()
+
+	for !token.WaitTimeout(3 * time.Second) {
+	}
+
+	if err := token.Error(); err != nil {
+		log.Fatal(err)
+	}
+
+	return client
+}
+
+func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
+	opts.SetUsername(uri.User.Username())
+	password, _ := uri.User.Password()
+	opts.SetPassword(password)
+	opts.SetClientID(clientId)
+
+	return opts
 }
 
 func loadMQTTConfigs() {
