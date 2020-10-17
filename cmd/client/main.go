@@ -31,7 +31,7 @@ var (
 	rdb        *redis.Client
 	config     models.JsonDevices
 	server     *socketio.Server
-	client     mqtt.Client
+	mqttClient mqtt.Client
 	mqttConfig models.MQTTConfig
 
 	Cache        *cache.Cache    = cache.New(0, 0)
@@ -58,7 +58,15 @@ func connectRedis() {
 }
 
 func connectMQTT() {
-	if mqttConfig.Host != "" {
+	if _, err := os.Stat("./mqtt.json"); err == nil {
+		jsonFile, err := os.Open("./mqtt.json")
+		if err != nil {
+			fmt.Print(err)
+		}
+
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &mqttConfig)
+
 		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", mqttConfig.User.Username, mqttConfig.User.Password, mqttConfig.Host, mqttConfig.Port)
 		fmt.Printf("uriString: %s\n", uriString)
 
@@ -69,23 +77,17 @@ func connectMQTT() {
 
 		fmt.Printf("uri: %+v\n", uri)
 
-		client = connect("pub", uri)
+		opts := createClientOptions(mqttConfig.User.CliendID, uri)
+		mqttClient = mqtt.NewClient(opts)
+		token := mqttClient.Connect()
+
+		for !token.WaitTimeout(3 * time.Second) {
+		}
+
+		if err := token.Error(); err != nil {
+			log.Fatal(err)
+		}
 	}
-}
-
-func connect(clientId string, uri *url.URL) mqtt.Client {
-	opts := createClientOptions(clientId, uri)
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
-
-	for !token.WaitTimeout(3 * time.Second) {
-	}
-
-	if err := token.Error(); err != nil {
-		log.Fatal(err)
-	}
-
-	return client
 }
 
 func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
@@ -97,18 +99,6 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	opts.SetClientID(clientId)
 
 	return opts
-}
-
-func loadMQTTConfigs() {
-	if _, err := os.Stat("./mqtt.json"); err == nil {
-		jsonFile, err := os.Open("./mqtt.json")
-		if err != nil {
-			fmt.Print(err)
-		}
-
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &mqttConfig)
-	}
 }
 
 func loadConfigs() {
@@ -312,7 +302,7 @@ func broadcastDevice(row string) {
 }
 
 func broadcastMQTTDevice(device models.Device) {
-	if client != nil {
+	if mqttClient.IsConnected() {
 		var (
 			battery      = device.Battery
 			humidity     = device.Humidity
@@ -329,11 +319,11 @@ func broadcastMQTTDevice(device models.Device) {
 			topicT = topic + "temperature"
 		)
 
-		client.Publish(topicA, 0, true, acceleration)
-		client.Publish(topicB, 0, true, battery)
-		client.Publish(topicH, 0, true, humidity)
-		client.Publish(topicP, 0, true, pressure)
-		client.Publish(topicT, 0, true, temperature)
+		mqttClient.Publish(topicA, 0, true, acceleration)
+		mqttClient.Publish(topicB, 0, true, battery)
+		mqttClient.Publish(topicH, 0, true, humidity)
+		mqttClient.Publish(topicP, 0, true, pressure)
+		mqttClient.Publish(topicT, 0, true, temperature)
 	}
 }
 
@@ -426,6 +416,7 @@ func handler(data ruuvitag.Measurement) {
 
 func main() {
 	connectRedis()
+	connectMQTT()
 	go startSocketIOServer()
 	loadConfigs()
 	startTickers()
