@@ -28,19 +28,19 @@ import (
 
 // Cache for variables
 var (
-	rdb    *redis.Client
-	config models.JsonDevices
-	server *socketio.Server
-	client mqtt.Client
+	rdb        *redis.Client
+	config     models.JsonDevices
+	server     *socketio.Server
+	client     mqtt.Client
+	mqttConfig models.MQTTConfig
 
-	mqttConfig   models.MQTTConfig = nil
-	Cache        *cache.Cache      = cache.New(0, 0)
-	ctx          context.Context   = context.Background()
-	interval     time.Duration     = time.Minute
-	namespace    string            = "/"
-	room         string            = ""
-	updateEvent  string            = "update"
-	initialEvent string            = "initial"
+	Cache        *cache.Cache    = cache.New(0, 0)
+	ctx          context.Context = context.Background()
+	interval     time.Duration   = time.Minute
+	namespace    string          = "/"
+	room         string          = ""
+	updateEvent  string          = "update"
+	initialEvent string          = "initial"
 )
 
 func connectRedis() {
@@ -58,7 +58,7 @@ func connectRedis() {
 }
 
 func connectMQTT() {
-	if mqttConfig != nil {
+	if mqttConfig && mqttConfig.Host != "" {
 		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", mqttConfig.User.Username, mqttConfig.User.Password, mqttConfig.Host, mqttConfig.Port)
 		fmt.Printf("uriString: %s\n", uriString)
 
