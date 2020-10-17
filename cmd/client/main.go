@@ -391,7 +391,7 @@ func broadcastMQTTDevice(device models.Device) {
 
         fmt.Printf("redisData %+v\n", redisData)
         
-        token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, redisData)
+        token = mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, redisData)
 		token.Wait()
 	}
 }
