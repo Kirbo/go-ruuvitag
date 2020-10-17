@@ -89,8 +89,6 @@ func connectMQTT() {
 			log.Fatal(err)
 		}
 
-		mqttClient.Publish("connected", 0, false, "jooo")
-
 		mqttEnabled = true
 	}
 }
@@ -327,6 +325,9 @@ func broadcastMQTTDevice(device models.Device) {
 		)
 
 		fmt.Println("topicT", topicT, temperature)
+
+		mqttClient.Publish("connected", 0, false, "jooo")
+		mqttClient.Publish("connected", 0, true, "jep")
 
 		mqttClient.Publish(topicA, 0, true, acceleration)
 		mqttClient.Publish(topicB, 0, true, battery)
