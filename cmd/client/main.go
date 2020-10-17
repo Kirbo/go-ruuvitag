@@ -41,6 +41,7 @@ var (
 	room         string          = ""
 	updateEvent  string          = "update"
 	initialEvent string          = "initial"
+	mqttEnabled  bool            = false
 )
 
 func connectRedis() {
@@ -87,6 +88,8 @@ func connectMQTT() {
 		if err := token.Error(); err != nil {
 			log.Fatal(err)
 		}
+
+		mqttEnabled = true
 	}
 }
 
@@ -302,7 +305,7 @@ func broadcastDevice(row string) {
 }
 
 func broadcastMQTTDevice(device models.Device) {
-	if mqttClient.IsConnected() {
+	if mqttEnabled {
 		var (
 			battery      = device.Battery
 			humidity     = device.Humidity
