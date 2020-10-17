@@ -28,19 +28,19 @@ import (
 
 // Cache for variables
 var (
-	rdb        *redis.Client
-	config     models.JsonDevices
-	mqttConfig models.MQTTConfig
-	server     *socketio.Server
-	client     mqtt.Client
+	rdb    *redis.Client
+	config models.JsonDevices
+	server *socketio.Server
+	client mqtt.Client
 
-	Cache        *cache.Cache    = cache.New(0, 0)
-	ctx          context.Context = context.Background()
-	interval     time.Duration   = time.Minute
-	namespace    string          = "/"
-	room         string          = ""
-	updateEvent  string          = "update"
-	initialEvent string          = "initial"
+	mqttConfig   models.MQTTConfig = nil
+	Cache        *cache.Cache      = cache.New(0, 0)
+	ctx          context.Context   = context.Background()
+	interval     time.Duration     = time.Minute
+	namespace    string            = "/"
+	room         string            = ""
+	updateEvent  string            = "update"
+	initialEvent string            = "initial"
 )
 
 func connectRedis() {
@@ -320,13 +320,13 @@ func broadcastMQTTDevice(device models.Device) {
 			temperature  = device.Temperature
 			acceleration = device.Acceleration
 
-			topic = "ruuvitag/" + data.DeviceID() + "/"
+			topic = "ruuvitag/" + device.ID + "/"
 
 			topicA = topic + "acceleration"
 			topicB = topic + "battery"
 			topicH = topic + "humidity"
 			topicP = topic + "pressure"
-			topicT = topic + "t"
+			topicT = topic + "temperature"
 		)
 
 		client.Publish(topicA, 0, true, acceleration)
