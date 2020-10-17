@@ -89,27 +89,26 @@ func connectMQTT() {
 			log.Fatal(err)
 		}
 
-		iter := rdb.Scan(ctx, 0, fmt.Sprintf("%s%s", channels.Device, "*"), 1).Iterator()
-		for iter.Next(ctx) {
-			key := iter.Val()
-			payload, err := rdb.Get(ctx, key).Result()
+		mqttEnabled = true
+		
+		for i := range config {
+			sensor := &config[i]
+
+			oldID := parseOldID(sensor.ID)
+
+			row, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
 			if err != nil {
-				log.Printf("No data found for: %s", key)
+				log.Printf("No data found for: %s", sensor.Name)
 				return
 			}
-			
-			device, err := parseMessage(payload)
+
+			device, err := parseMessage(row)
 			if err != nil {
 				panic(err)
 			}
 
 			broadcastMQTTNames(device)
 		}
-		if err := iter.Err(); err != nil {
-			panic(err)
-		}
-
-		mqttEnabled = true
 	}
 }
 
