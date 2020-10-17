@@ -458,10 +458,10 @@ func handler(data ruuvitag.Measurement) {
 }
 
 func main() {
+	loadConfigs()
 	connectRedis()
 	connectMQTT()
 	go startSocketIOServer()
-	loadConfigs()
 	startTickers()
 
 	scanner, err := ruuvitag.OpenScanner(10)
