@@ -382,6 +382,16 @@ func broadcastMQTTDevice(device models.Device) {
 		fmt.Printf("broadcastMsg %+v\n", broadcastMsg)
 
 		token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
+        token.Wait()
+
+        redisData, err := json.Marshal(device)
+        if err != nil {
+            panic(err)
+        }
+
+        fmt.Printf("redisData %+v\n", redisData)
+        
+        token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, redisData)
 		token.Wait()
 	}
 }
