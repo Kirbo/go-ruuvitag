@@ -377,7 +377,8 @@ func broadcastMQTTDevice(device models.Device) {
 		// }
 
 		topic := fmt.Sprintf("ruuvitag/%v", device.ID)
-		mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, device)
+		broadcastMsg := broadcastMessage(device)
+		mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 	}
 }
 
