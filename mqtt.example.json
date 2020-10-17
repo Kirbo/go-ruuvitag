@@ -5,5 +5,14 @@
         "clientId": "ruuvitag-mqtt",
         "username": "kirbo",
         "password": "password"
+    },
+    "enabledmetrics": {
+        "battery": true,
+        "humidity": true,
+        "pressure": true,
+        "temperature": true,
+        "x": true,
+        "y": true,
+        "z": true
     }
 }

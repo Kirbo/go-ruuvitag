@@ -324,15 +324,27 @@ func broadcastMQTTDevice(device models.Device) {
 			topicZ = fmt.Sprintf("ruuvitag/%v/%s", device.ID, "z")
 		)
 
-		fmt.Println("topicT", topicT, temperature)
-
-		mqttClient.Publish(topicB, 0, true, fmt.Sprintf("%v", battery))
-		mqttClient.Publish(topicH, 0, true, fmt.Sprintf("%v", humidity))
-		mqttClient.Publish(topicP, 0, true, fmt.Sprintf("%v", pressure))
-		mqttClient.Publish(topicT, 0, true, fmt.Sprintf("%v", temperature))
-		mqttClient.Publish(topicX, 0, true, fmt.Sprintf("%v", x))
-		mqttClient.Publish(topicY, 0, true, fmt.Sprintf("%v", y))
-		mqttClient.Publish(topicZ, 0, true, fmt.Sprintf("%v", z))
+		if mqttConfig.EnabledMetrics.Battery {
+			mqttClient.Publish(topicB, 0, true, fmt.Sprintf("%v", battery))
+		}
+		if mqttConfig.EnabledMetrics.Humidity {
+			mqttClient.Publish(topicH, 0, true, fmt.Sprintf("%v", humidity))
+		}
+		if mqttConfig.EnabledMetrics.Pressure {
+			mqttClient.Publish(topicP, 0, true, fmt.Sprintf("%v", pressure))
+		}
+		if mqttConfig.EnabledMetrics.Battery {
+			mqttClient.Publish(topicT, 0, true, fmt.Sprintf("%v", temperature))
+		}
+		if mqttConfig.EnabledMetrics.X {
+			mqttClient.Publish(topicX, 0, true, fmt.Sprintf("%v", x))
+		}
+		if mqttConfig.EnabledMetrics.Y {
+			mqttClient.Publish(topicY, 0, true, fmt.Sprintf("%v", y))
+		}
+		if mqttConfig.EnabledMetrics.Z {
+			mqttClient.Publish(topicZ, 0, true, fmt.Sprintf("%v", z))
+		}
 	}
 }
 
