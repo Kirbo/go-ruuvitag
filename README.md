@@ -85,6 +85,9 @@ At the end of it, add the following:
 
 masterauth passwordForAuthentication
 requirepass passwordForAuthentication
+appendonly yes
+aof-use-rdb-preamble yes
+appendfsync always
 ```
 
 ### Configure Go-Ruuvitag
