@@ -230,7 +230,7 @@ func handleRow(key, row string) {
 	deleteKey(key, 0)
 }
 
-func deleteKey(key string, count int) {
+func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
 	log.Printf("key %s status %s", key, status)
 	if status.Val() == 1 {
@@ -242,16 +242,14 @@ func deleteKey(key string, count int) {
 		return
 	}
 
-	count = count + 1
-
-	if count == 30 {
-		err := fmt.Errorf("Error with key %s status %s", key, status)
+	if attempt == 30 {
+		err := fmt.Errorf("Error with key %s status %s attempt %v", key, status, attempt)
 		fmt.Println("An error happened:", err)
 		os.Exit(1)
 	}
 
 	time.Sleep(time.Second)
-	deleteKey(key, count)
+	deleteKey(key, attempt+1)
 }
 
 func handleBuffer() {
