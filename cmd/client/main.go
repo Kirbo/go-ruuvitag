@@ -382,6 +382,7 @@ func broadcastMQTTDevices() {
 	for i := range config.Ruuvitags {
 		sensor := &config.Ruuvitags[i]
 
+		timestamp := makeTimestamp()
 		oldID := parseOldID(sensor.ID)
 
 		val, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
@@ -394,6 +395,8 @@ func broadcastMQTTDevices() {
 		if err != nil {
 			panic(err)
 		}
+
+		device.Ping = int64(timestamp - device.Timestamp)
 
 		go broadcastMQTTDevice(device)
 	}
