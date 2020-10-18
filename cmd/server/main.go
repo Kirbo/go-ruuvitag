@@ -237,7 +237,7 @@ func deleteKey(key string, count int) {
 		return
 	}
 
-	payload, err := rdb.Get(ctx, key).Result()
+	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
 		return
 	}
