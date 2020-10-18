@@ -34,15 +34,13 @@ var (
 	mqttClient mqtt.Client
 	mqttConfig models.MQTTConfig
 
-	Cache          *cache.Cache    = cache.New(0, 0)
-	ctx            context.Context = context.Background()
-	insertInterval time.Duration   = time.Seconds
-	mqttInterval   time.Duration   = time.Seconds
-	namespace      string          = "/"
-	room           string          = ""
-	updateEvent    string          = "update"
-	initialEvent   string          = "initial"
-	mqttEnabled    bool            = false
+	Cache        *cache.Cache    = cache.New(0, 0)
+	ctx          context.Context = context.Background()
+	namespace    string          = "/"
+	room         string          = ""
+	updateEvent  string          = "update"
+	initialEvent string          = "initial"
+	mqttEnabled  bool            = false
 )
 
 func connectRedis() {
@@ -137,10 +135,10 @@ func loadConfigs() {
 
 func startTickers() {
 	if config.Inserts {
-		insertsTicket := time.NewTicker(config.Interval * time.Seconds)
+		insertsTicket := time.NewTicker(config.Interval * time.Second)
 	}
 	if mqttEnabled {
-		mqttTicker := time.NewTicker(mqttConfig.Interval * time.Seconds)
+		mqttTicker := time.NewTicker(mqttConfig.Interval * time.Second)
 	}
 
 	done := make(chan bool)
