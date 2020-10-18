@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/kirbo/go-ruuvitag/internal/models"
+	"gitlab.com/kirbo/go-ruuvitag/internal/models"
 	"github.com/lib/pq"
 )
 

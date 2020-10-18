@@ -17,8 +17,8 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 
-	"github.com/kirbo/go-ruuvitag/internal/channels"
-	"github.com/kirbo/go-ruuvitag/internal/models"
+	"gitlab.com/kirbo/go-ruuvitag/internal/channels"
+	"gitlab.com/kirbo/go-ruuvitag/internal/models"
 )
 
 var (

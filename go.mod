@@ -1,4 +1,4 @@
-module github.com/kirbo/go-ruuvitag
+module gitlab.com/kirbo/go-ruuvitag
 
 go 1.15
 
@@ -12,7 +12,7 @@ require (
 	github.com/googollee/go-socket.io v1.4.4
 	github.com/imdario/mergo v0.3.11
 	github.com/joho/godotenv v1.3.0
-	github.com/kirbo/go-ruuvitag-client v0.0.0-20201004154708-36b78bd57c65 // indirect
+	github.com/kirbo/go-ruuvitag v0.0.0-20201017181513-78970383d974 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/onsi/gomega v1.10.2 // indirect

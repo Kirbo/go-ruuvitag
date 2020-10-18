@@ -22,8 +22,8 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/peknur/ruuvitag"
 
-	"github.com/kirbo/go-ruuvitag/internal/channels"
-	"github.com/kirbo/go-ruuvitag/internal/models"
+	"gitlab.com/kirbo/go-ruuvitag/internal/channels"
+	"gitlab.com/kirbo/go-ruuvitag/internal/models"
 )
 
 // Cache for variables
@@ -126,7 +126,7 @@ func loadConfigs() {
 				pressure    float32 = float32(device.Pressure) / 100
 				battery             = device.Battery
 			)
-			
+
 			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", ping, name, temperature, humidity, pressure, battery))
 		}
 	}
@@ -308,12 +308,12 @@ func broadcastMQTTDevice(device models.Device) {
 	if mqttEnabled {
 		topic := fmt.Sprintf("ruuvitag/%v", device.ID)
 
-        broadcastMsg, err := json.Marshal(device)
-        if err != nil {
-            panic(err)
-        }
+		broadcastMsg, err := json.Marshal(device)
+		if err != nil {
+			panic(err)
+		}
 
-        token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
+		token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 		token.Wait()
 	}
 }

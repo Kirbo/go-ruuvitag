@@ -9,11 +9,16 @@
     },
     "enabledmetrics": {
         "battery": true,
+        "format": false,
         "humidity": true,
         "pressure": true,
+        "ping": true,
         "temperature": true,
+        "timestamp": false,
+        "timestampz": false,
         "x": true,
         "y": true,
         "z": true
-    }
+    },
+    "interval": 60
 }
