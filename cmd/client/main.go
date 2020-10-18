@@ -295,10 +295,26 @@ func createInserts() {
 			return
 		}
 
-		if err = setAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), oldID), val); err != nil {
+		if err = setNXAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), oldID), val); err != nil {
 			panic(err)
 		}
 	}
+}
+
+func setNXAndPublish(channel string, data string) error {
+	var err error
+
+	err = rdb.Publish(ctx, channel, data).Err()
+	if err != nil {
+		return err
+	}
+
+	err = rdb.SetNX(ctx, channel, data, 0).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func setAndPublish(channel string, data string) error {
