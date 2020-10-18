@@ -455,10 +455,12 @@ func handler(data ruuvitag.Measurement) {
 			panic(err)
 		}
 
-		ping = timestamp - device.Timestamp
+		ping = float32(timestamp-device.Timestamp) / 1000
 	}
 
 	var deviceStub = models.Device{
+		ID:          address,
+		OldID:       addressOld,
 		Ping:        ping,
 		Format:      data.Format(),
 		Humidity:    data.Humidity(),
