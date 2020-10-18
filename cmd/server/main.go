@@ -177,9 +177,9 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Device:
-			broadcastDevice(msg.Payload)
+			go broadcastDevice(msg.Payload)
 		case channels.Insert:
-			handleRow(msg.Channel, msg.Payload)
+			go handleRow(msg.Channel, msg.Payload)
 		default:
 		}
 	}
@@ -232,10 +232,22 @@ func handleRow(key, row string) {
 
 func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
-	log.Printf("key %s status %s attempt #%v", key, status, attempt)
 	if status.Val() == 1 {
 		return
 	}
+
+	if attempt == 10 {
+		err := fmt.Errorf("Error deleting key %s status %s attempt #%v", key, status, attempt)
+		fmt.Println("An error happened:", err)
+		os.Exit(1)
+	}
+
+	waitForSeconds := 5
+
+	attempt = attempt + 1
+	log.Printf("Error deleting key %s, retrying in %v seconds", key, waitForSeconds)
+
+	time.Sleep(waitForSeconds * time.Second)
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
@@ -243,15 +255,7 @@ func deleteKey(key string, attempt int) {
 		return
 	}
 
-	if attempt == 30 {
-		err := fmt.Errorf("Error with key %s status %s attempt #%v", key, status, attempt)
-		fmt.Println("An error happened:", err)
-		os.Exit(1)
-	}
-
-	time.Sleep(time.Second)
-	attempt = attempt + 1
-	fmt.Println("attempt #%v for key %s", attempt, key)
+	fmt.Printf("attempt #%v for key %s\n", attempt, key)
 	deleteKey(key, attempt)
 }
 
