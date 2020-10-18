@@ -128,3 +128,29 @@ If you want to see the logs, you can use either:
 or:
 - `make follow-client`
 - `make follow-server`
+
+
+## Example installation
+
+My setup is as following, I have/use:
+- Raspberry Pi 3
+- Raspberry Pi 4
+- iPad Air 2
+- Virtual Server
+
+In more details, on my Raspberry Pi 3:
+- I have installed Go RuuviTag Client
+- Redis, as replication master
+- ["Floorplan"](https://gitlab.com/kirbo/floorplan), that the Go RuuviTag Client is serving in my LAN
+
+On my Raspberry Pi 4:
+- I have installed [Home Assistant OS](https://www.home-assistant.io/hassio/)
+- MQTT Server
+
+On my Virtual Server:
+- I have installed Go RuuviTag Server
+- Redis, as replication slave
+- ["Floorplan"](https://gitlab.com/kirbo/floorplan), that is served with Nginx, to be accessible everywhere
+
+On my iPad Air 2:
+- I open the "floorplan" from my LAN, in Kiosk mode
