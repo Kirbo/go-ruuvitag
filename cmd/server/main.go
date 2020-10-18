@@ -232,7 +232,7 @@ func handleRow(key, row string) {
 
 func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
-	log.Printf("key %s status %s", key, status)
+	log.Printf("key %s status %s attempt %v", key, status, attempt)
 	if status.Val() == 1 {
 		return
 	}
