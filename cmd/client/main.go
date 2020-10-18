@@ -483,6 +483,8 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
+	fmt.Printf("device: %+v\n", device)
+
 	redisData, err := stringifyMessage(device)
 	if err != nil {
 		panic(err)
@@ -521,6 +523,7 @@ func main() {
 	output := scanner.Start()
 	for {
 		data := <-output
+		fmt.Printf("data: %+v\n", data)
 		go handler(data)
 	}
 }
