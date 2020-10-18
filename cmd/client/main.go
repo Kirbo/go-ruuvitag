@@ -128,12 +128,12 @@ func loadConfigs() {
 
 		redisData, err := stringifyMessage(device)
 		if err != nil {
-			return err
+			return
 		}
 
 		err = rdb.Set(ctx, key, redisData, 0).Err()
 		if err != nil {
-			return err
+			return
 		}
 
 		if found {
@@ -324,7 +324,7 @@ func parseMessage(row string) (device models.Device, err error) {
 }
 
 func stringifyMessage(device models.Device) (stringified string, err error) {
-	stringified, err = json.Marshal(device)
+	stringified []byte, err = json.Marshal(device)
 	if err != nil {
 		return
 	}
