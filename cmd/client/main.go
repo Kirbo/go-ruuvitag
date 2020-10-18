@@ -51,6 +51,8 @@ func connectRedis() {
 		Password: redisPassword,
 		DB:       0,
 	})
+
+	reloadNames()
 }
 
 func connectMQTT() {
@@ -106,6 +108,12 @@ func loadConfigs() {
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	json.Unmarshal(byteValue, &config)
+}
+
+func reloadNames() {
+	if config.LogReloadNames {
+		log.Print("Reloading sensor names...")
+	}
 
 	for i := 0; i < len(config.Ruuvitags); i++ {
 		sensor := &config.Ruuvitags[i]
@@ -152,6 +160,7 @@ func startTickers() {
 				return
 			case <-configTicker.C:
 				loadConfigs()
+				reloadNames()
 			}
 		}
 	}()
@@ -485,6 +494,7 @@ func handler(data ruuvitag.Measurement) {
 
 func main() {
 	loadConfigs()
+
 	if config.EnableRedis {
 		connectRedis()
 	}

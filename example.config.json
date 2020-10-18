@@ -6,7 +6,8 @@
   "enableRedis": true,
   "logSocket": false,
   "logMQTT": true,
-  "LogInserts": true,
+  "logInserts": true,
+  "logReloadNames": true,
   "ruuvitags": [
     {
       "name": "Sauna",
