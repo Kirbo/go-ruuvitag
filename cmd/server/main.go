@@ -246,8 +246,11 @@ func deleteKey(key string) {
 			break
 		}
 
-		if i == 60 {
-			panic(fmt.Sprintf("Error with key %s status %s", key, status))
+		if i == 30 {
+			// panic(fmt.Sprintf("Error with key %s status %s", key, status))
+			err = fmt.Errorf("Error with key %s status %s", key, status)
+			fmt.Println("An error happened:", err)
+			os.Exit(1)
 		}
 	}
 }
