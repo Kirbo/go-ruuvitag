@@ -29,19 +29,20 @@ import (
 // Cache for variables
 var (
 	rdb        *redis.Client
-	config     models.JsonDevices
+	config     models.Config
 	server     *socketio.Server
 	mqttClient mqtt.Client
 	mqttConfig models.MQTTConfig
 
-	Cache        *cache.Cache    = cache.New(0, 0)
-	ctx          context.Context = context.Background()
-	interval     time.Duration   = time.Minute
-	namespace    string          = "/"
-	room         string          = ""
-	updateEvent  string          = "update"
-	initialEvent string          = "initial"
-	mqttEnabled  bool            = false
+	Cache          *cache.Cache    = cache.New(0, 0)
+	ctx            context.Context = context.Background()
+	insertInterval time.Duration   = time.Seconds
+	mqttInterval   time.Duration   = time.Seconds
+	namespace      string          = "/"
+	room           string          = ""
+	updateEvent    string          = "update"
+	initialEvent   string          = "initial"
+	mqttEnabled    bool            = false
 )
 
 func connectRedis() {
@@ -114,9 +115,11 @@ func loadConfigs() {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	json.Unmarshal(byteValue, &config)
 
-	for i := 0; i < len(config); i++ {
-		Cache.Set(fmt.Sprintf("name:%s", config[i].ID), config[i].Name, cache.NoExpiration)
-		if x, found := Cache.Get(fmt.Sprintf("%s%s", channels.Device, config[i].ID)); found {
+	for i := 0; i < len(config.Ruuvitags); i++ {
+		sensor := config.Ruuvitags[i]
+
+		Cache.Set(fmt.Sprintf("name:%s", sensor.ID), sensor.Name, cache.NoExpiration)
+		if x, found := Cache.Get(fmt.Sprintf("%s%s", channels.Device, sensor.ID)); found {
 			device := x.(models.Device)
 			var (
 				ping        float32 = float32(device.Ping) / 1000
@@ -133,16 +136,25 @@ func loadConfigs() {
 }
 
 func startTickers() {
-	ticker := time.NewTicker(interval)
+	if config.Inserts {
+		insertsTicket := time.NewTicker(config.Interval * time.Seconds)
+	}
+	if mqttEnabled {
+		mqttTicker := time.NewTicker(mqttConfig.Interval * time.Seconds)
+	}
+
 	done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case <-done:
 				return
-			case <-ticker.C:
+			case <-insertsTicket.C:
 				loadConfigs()
 				createInserts()
+			}
+			case <-mqttTicker.C:
+				broadcastMQTTDevices()
 			}
 		}
 	}()
@@ -230,8 +242,8 @@ func startSocketIOServer() {
 }
 
 func createInserts() {
-	for i := range config {
-		sensor := &config[i]
+	for i := range config.Ruuvitags {
+		sensor := &config.Ruuvitags[i]
 
 		oldID := parseOldID(sensor.ID)
 
@@ -239,15 +251,6 @@ func createInserts() {
 		if err != nil {
 			log.Printf("No data found for: %s", sensor.Name)
 			return
-		}
-
-		if mqttEnabled {
-			device, err := parseMessage(val)
-			if err != nil {
-				panic(err)
-			}
-
-			go broadcastMQTTDevice(device)
 		}
 
 		if err = setAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), oldID), val); err != nil {
@@ -313,8 +316,30 @@ func broadcastDevice(row string) {
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
 }
 
+func broadcastMQTTDevices() {
+	for i := range config.Ruuvitags {
+		sensor := &config.Ruuvitags[i]
+
+		oldID := parseOldID(sensor.ID)
+
+		val, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
+		if err != nil {
+			log.Printf("No data found for: %s", sensor.Name)
+			return
+		}
+
+		if mqttEnabled {
+			device, err := parseMessage(val)
+			if err != nil {
+				panic(err)
+			}
+
+			go broadcastMQTTDevice(device)
+		}
+	}
+}
+
 func broadcastMQTTDevice(device models.Device) {
-	// if mqttEnabled {
 	topic := fmt.Sprintf("ruuvitag/%v", device.ID)
 
 	broadcastMsg, err := json.Marshal(device)
@@ -324,7 +349,6 @@ func broadcastMQTTDevice(device models.Device) {
 
 	token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
 	token.Wait()
-	// }
 }
 
 func initialDataForWebClient() (devices []models.BroadcastMessage, err error) {
@@ -406,7 +430,9 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
-	go broadcastDevice(string(redisData))
+	if config.EnableSocket {
+		go broadcastDevice(string(redisData))
+	}
 
 	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
 		panic(err)
@@ -416,8 +442,12 @@ func handler(data ruuvitag.Measurement) {
 func main() {
 	loadConfigs()
 	connectRedis()
-	connectMQTT()
-	go startSocketIOServer()
+	if mqttEnabled {
+		connectMQTT()
+	}
+	if config.EnableSocket {
+		go startSocketIOServer()
+	}
 	startTickers()
 
 	scanner, err := ruuvitag.OpenScanner(10)
