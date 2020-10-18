@@ -177,9 +177,9 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Device:
-			broadcastDevice(msg.Payload)
+			go broadcastDevice(msg.Payload)
 		case channels.Insert:
-			handleRow(msg.Channel, msg.Payload)
+			go handleRow(msg.Channel, msg.Payload)
 		default:
 		}
 	}
