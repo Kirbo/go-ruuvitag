@@ -1,8 +1,10 @@
 package models
 
 type Config struct {
-	Interval     int32       `json:"interval"`
-	Inserts      bool        `json:"inserts"`
-	EnableSocket bool        `json:"enableSocket"`
-	Ruuvitags    JsonDevices `json:"ruuvitags"`
+	Interval      int32       `json:"interval"`
+	EnableInserts bool        `json:"enableInserts"`
+	EnableRedis   bool        `json:"enableRedis"`
+	EnableSocket  bool        `json:"enableSocket"`
+	EnableMQTT    bool        `json:"enableMQTT"`
+	Ruuvitags     JsonDevices `json:"ruuvitags"`
 }

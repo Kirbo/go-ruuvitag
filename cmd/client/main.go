@@ -40,7 +40,6 @@ var (
 	room         string          = ""
 	updateEvent  string          = "update"
 	initialEvent string          = "initial"
-	mqttEnabled  bool            = false
 )
 
 func connectRedis() {
@@ -87,8 +86,6 @@ func connectMQTT() {
 		if err := token.Error(); err != nil {
 			log.Fatal(err)
 		}
-
-		mqttEnabled = true
 	}
 }
 
@@ -134,23 +131,35 @@ func loadConfigs() {
 }
 
 func startTickers() {
-	if config.Inserts {
-		insertsTicket := time.NewTicker(time.Duration(config.Interval) * time.Second)
+	configTicker := time.NewTicker(time.Minute)
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-configTicker.C:
+				loadConfigs()
+			}
+		}
+	}()
+
+	if config.EnableInserts {
+		insertsTicker := time.NewTicker(time.Duration(config.Interval) * time.Second)
 		done := make(chan bool)
 		go func() {
 			for {
 				select {
 				case <-done:
 					return
-				case <-insertsTicket.C:
-					loadConfigs()
+				case <-insertsTicker.C:
 					createInserts()
 				}
 			}
 		}()
 	}
 
-	if mqttEnabled {
+	if config.EnableMQTT {
 		mqttTicker := time.NewTicker(time.Duration(mqttConfig.Interval) * time.Second)
 		done := make(chan bool)
 		go func() {
@@ -334,14 +343,12 @@ func broadcastMQTTDevices() {
 			return
 		}
 
-		if mqttEnabled {
-			device, err := parseMessage(val)
-			if err != nil {
-				panic(err)
-			}
-
-			go broadcastMQTTDevice(device)
+		device, err := parseMessage(val)
+		if err != nil {
+			panic(err)
 		}
+
+		go broadcastMQTTDevice(device)
 	}
 }
 
@@ -447,8 +454,10 @@ func handler(data ruuvitag.Measurement) {
 
 func main() {
 	loadConfigs()
-	connectRedis()
-	if mqttEnabled {
+	if config.EnableRedis {
+		connectRedis()
+	}
+	if config.EnableMQTT {
 		connectMQTT()
 	}
 	if config.EnableSocket {

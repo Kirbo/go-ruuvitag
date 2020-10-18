@@ -1,6 +1,17 @@
-[
-  {
-    "name": "Sauna",
-    "id": "d6:e1:6a:f7:04:6b"
-  }
-]
+{
+  "interval": 60,
+  "enableInserts": true,
+  "enableSocket": true,
+  "enableMQTT": true,
+  "enableRedis": true,
+  "ruuvitags": [
+    {
+      "name": "Sauna",
+      "id": "D6:E1:6A:F7:04:6B"
+    },
+    {
+      "name": "Olohuone",
+      "id": "EF:09:DB:A6:7D:71"
+    }
+  ]
+}
