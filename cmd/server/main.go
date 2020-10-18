@@ -265,6 +265,8 @@ func deleteKey(key string, attempt int) {
 }
 
 func handleBuffer() {
+	log.Println("Handle/clean buffer...")
+
 	wg := sync.WaitGroup{}
 
 	go func() {
@@ -311,10 +313,26 @@ func initialDataForWebClient() (devices []models.BroadcastMessage, err error) {
 	return
 }
 
+func startTickers() {
+	ticker := time.NewTicker(time.Duration(1) * time.Hour)
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				handleBuffer()
+			}
+		}
+	}()
+}
+
 func main() {
 	connectRedis()
 	connectPostgres()
 	go startSocketIOServer()
 	go handleBuffer()
+	startTickers()
 	subscribes()
 }
