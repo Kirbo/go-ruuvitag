@@ -136,25 +136,34 @@ func loadConfigs() {
 func startTickers() {
 	if config.Inserts {
 		insertsTicket := time.NewTicker(time.Duration(config.Interval) * time.Second)
-	}
-	if mqttEnabled {
-		mqttTicker := time.NewTicker(time.Duration(mqttConfig.Interval) * time.Second)
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-insertsTicket.C:
+					loadConfigs()
+					createInserts()
+				}
+			}
+		}()
 	}
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			case <-insertsTicket.C:
-				loadConfigs()
-				createInserts()
-			case <-mqttTicker.C:
-				broadcastMQTTDevices()
+	if mqttEnabled {
+		mqttTicker := time.NewTicker(time.Duration(mqttConfig.Interval) * time.Second)
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-mqttTicker.C:
+					broadcastMQTTDevices()
+				}
 			}
-		}
-	}()
+		}()
+	}
 }
 
 func GinMiddleware(allowOrigin string) gin.HandlerFunc {

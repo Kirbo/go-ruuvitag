@@ -19,6 +19,7 @@ type EnabledMetrics struct {
 type MQTTConfig struct {
 	Host           string         `json:"mqtthost"`
 	Port           int32          `json:"mqttport"`
+	Interval       int32          `json:"interval"`
 	User           MQTTUser       `json:"mqttuser"`
 	RetainMessages bool           `json:"retainmessages"`
 	EnabledMetrics EnabledMetrics `json:"enabledmetrics"`
