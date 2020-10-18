@@ -26,11 +26,12 @@ var (
 	rdbSlave *redis.Client
 	server   *socketio.Server
 
-	ctx          context.Context = context.Background()
-	namespace    string          = "/"
-	room         string          = ""
-	updateEvent  string          = "update"
-	initialEvent string          = "initial"
+	ctx            context.Context = context.Background()
+	namespace      string          = "/"
+	room           string          = ""
+	updateEvent    string          = "update"
+	initialEvent   string          = "initial"
+	waitForSeconds time.Duration   = 5
 )
 
 func connectRedis() {
@@ -233,7 +234,7 @@ func handleRow(key, row string) {
 func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
 	if status.Val() == 1 {
-		time.Sleep(time.Second)
+		time.Sleep(waitForSeconds * time.Second)
 
 		_, err := rdb.Get(ctx, key).Result()
 		if err != nil {
@@ -241,18 +242,16 @@ func deleteKey(key string, attempt int) {
 		}
 	}
 
-	if attempt == 10 {
+	if attempt == 5 {
 		err := fmt.Errorf("Error deleting key %s status %s attempt #%v", key, status, attempt)
 		log.Println("An error happened:", err)
 		os.Exit(1)
 	}
 
-	waitForSeconds := 5
-
 	attempt = attempt + 1
 	log.Printf("Error deleting key %s, retrying in %v seconds", key, waitForSeconds)
 
-	time.Sleep(time.Duration(waitForSeconds) * time.Second)
+	time.Sleep((waitForSeconds * time.Second)
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
