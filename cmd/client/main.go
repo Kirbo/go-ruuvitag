@@ -492,7 +492,9 @@ func handler(data ruuvitag.Measurement) {
 		go broadcastDevice(redisData)
 	}
 
-	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), redisData); err != nil {
+	fmt.Sprintf("redisData: %+v", redisData)
+
+	if err = setAndPublish(key, redisData); err != nil {
 		panic(err)
 	}
 }
