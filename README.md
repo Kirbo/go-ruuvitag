@@ -12,10 +12,16 @@
 
 ## Installation
 
-### Installing Redis and Go
+### Installing Redis
 
 ```sh
-apt install redis golang
+apt install redis
+```
+
+### Installing Golang
+
+```sh
+make install-go
 ```
 
 ### Installing Docker on Raspbian

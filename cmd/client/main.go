@@ -324,7 +324,7 @@ func parseMessage(row string) (device models.Device, err error) {
 }
 
 func stringifyMessage(device models.Device) (stringified string, err error) {
-	stringified, err := json.Marshal(device)
+	stringified, err = json.Marshal(device)
 	if err != nil {
 		return
 	}
@@ -433,7 +433,7 @@ func handler(data ruuvitag.Measurement) {
 		key        = fmt.Sprintf("%s%s", channels.Device, addressOld)
 	)
 
-	var device models.Device{
+	var device = models.Device{
 		ID:    address,
 		OldID: addressOld,
 	}
@@ -444,7 +444,7 @@ func handler(data ruuvitag.Measurement) {
 		if err != nil {
 			panic(err)
 		}
-	
+
 		ping = timestamp - device.Timestamp
 	}
 
