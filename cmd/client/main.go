@@ -241,6 +241,15 @@ func createInserts() {
 			return
 		}
 
+		if mqttEnabled {
+			device, err := parseMessage(val)
+			if err != nil {
+				panic(err)
+			}
+
+			go broadcastMQTTDevice(device)
+		}
+
 		if err = setAndPublish(fmt.Sprintf("%s%v:%s", channels.Insert, makeTimestamp(), oldID), val); err != nil {
 			panic(err)
 		}
@@ -305,17 +314,17 @@ func broadcastDevice(row string) {
 }
 
 func broadcastMQTTDevice(device models.Device) {
-	if mqttEnabled {
-		topic := fmt.Sprintf("ruuvitag/%v", device.ID)
+	// if mqttEnabled {
+	topic := fmt.Sprintf("ruuvitag/%v", device.ID)
 
-		broadcastMsg, err := json.Marshal(device)
-		if err != nil {
-			panic(err)
-		}
-
-		token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
-		token.Wait()
+	broadcastMsg, err := json.Marshal(device)
+	if err != nil {
+		panic(err)
 	}
+
+	token := mqttClient.Publish(topic, 0, mqttConfig.RetainMessages, broadcastMsg)
+	token.Wait()
+	// }
 }
 
 func initialDataForWebClient() (devices []models.BroadcastMessage, err error) {
@@ -398,7 +407,6 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	go broadcastDevice(string(redisData))
-	go broadcastMQTTDevice(device)
 
 	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
 		panic(err)
