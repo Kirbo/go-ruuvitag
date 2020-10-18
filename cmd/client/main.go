@@ -17,7 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	socketio "github.com/googollee/go-socket.io"
-	"github.com/imdario/mergo"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/peknur/ruuvitag"
 
@@ -461,9 +460,10 @@ func handler(data ruuvitag.Measurement) {
 		ping = int64(timestamp - device.Timestamp)
 	}
 
-	var deviceStub = models.Device{
+	device = models.Device{
 		ID:          address,
 		OldID:       addressOld,
+		Name:        device.Name,
 		Ping:        ping,
 		Format:      data.Format(),
 		Humidity:    data.Humidity(),
@@ -477,10 +477,6 @@ func handler(data ruuvitag.Measurement) {
 			Z: data.AccelerationZ(),
 		},
 		Battery: data.BatteryVoltage(),
-	}
-
-	if err := mergo.Merge(&device, deviceStub); err != nil {
-		panic(err)
 	}
 
 	fmt.Printf("device: %+v\n", device)
