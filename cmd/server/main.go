@@ -242,7 +242,6 @@ func deleteKey(key string, count int) {
 		return
 	}
 
-	time.Sleep(time.Second)
 	count = count + 1
 
 	if count == 30 {
@@ -250,6 +249,9 @@ func deleteKey(key string, count int) {
 		fmt.Println("An error happened:", err)
 		os.Exit(1)
 	}
+
+	time.Sleep(time.Second)
+	deleteKey(key, count)
 }
 
 func handleBuffer() {
