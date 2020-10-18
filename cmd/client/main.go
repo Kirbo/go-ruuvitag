@@ -135,10 +135,10 @@ func loadConfigs() {
 
 func startTickers() {
 	if config.Inserts {
-		insertsTicket := time.NewTicker(config.Interval * time.Second)
+		insertsTicket := time.NewTicker(time.Duration(config.Interval) * time.Second)
 	}
 	if mqttEnabled {
-		mqttTicker := time.NewTicker(mqttConfig.Interval * time.Second)
+		mqttTicker := time.NewTicker(time.Duration(mqttConfig.Interval) * time.Second)
 	}
 
 	done := make(chan bool)
