@@ -239,6 +239,7 @@ func deleteKey(key string, attempt int) {
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
+		fmt.Println("key %s not found", key)
 		return
 	}
 
@@ -249,7 +250,9 @@ func deleteKey(key string, attempt int) {
 	}
 
 	time.Sleep(time.Second)
-	deleteKey(key, attempt+1)
+	attempt = attempt + 1
+	fmt.Println("attempt #%v for key %s", attempt, key)
+	deleteKey(key, attempt)
 }
 
 func handleBuffer() {
