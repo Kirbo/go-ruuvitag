@@ -324,7 +324,7 @@ func parseMessage(row string) (device models.Device, err error) {
 }
 
 func stringifyMessage(device models.Device) (stringified string, err error) {
-	marhalled := []byte
+	var marhalled []byte
 	marhalled, err = json.Marshal(device)
 	if err != nil {
 		return
