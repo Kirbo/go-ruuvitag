@@ -441,7 +441,7 @@ func handler(data ruuvitag.Measurement) {
 		timestamp  = makeTimestamp()
 		address    = data.DeviceID()
 		addressOld = parseOldID(address)
-		ping       = timestamp
+		ping       = int64(0)
 		key        = fmt.Sprintf("%s%s", channels.Device, addressOld)
 	)
 
@@ -468,6 +468,7 @@ func handler(data ruuvitag.Measurement) {
 		Format:      data.Format(),
 		Humidity:    data.Humidity(),
 		Temperature: data.Temperature(),
+		Battery:     data.BatteryVoltage(),
 		Pressure:    float32(data.Pressure()) / float32(100),
 		Timestamp:   timestamp,
 		TimestampZ:  time.Unix(int64(time.Duration(timestamp/1000)), 0).Format(time.RFC3339),
@@ -476,7 +477,6 @@ func handler(data ruuvitag.Measurement) {
 			Y: data.AccelerationY(),
 			Z: data.AccelerationZ(),
 		},
-		Battery: data.BatteryVoltage(),
 	}
 
 	redisData, err := stringifyMessage(device)
