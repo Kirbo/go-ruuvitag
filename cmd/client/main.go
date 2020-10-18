@@ -149,11 +149,11 @@ func startTickers() {
 			select {
 			case <-done:
 				return
-			case <-insertsTicket.C:
+			case <-insertsTicket.C: {
 				loadConfigs()
 				createInserts()
 			}
-			case <-mqttTicker.C:
+			case <-mqttTicker.C: {
 				broadcastMQTTDevices()
 			}
 		}
