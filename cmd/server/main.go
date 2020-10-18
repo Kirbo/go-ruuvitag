@@ -177,9 +177,9 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Device:
-			go broadcastDevice(msg.Payload)
+			broadcastDevice(msg.Payload)
 		case channels.Insert:
-			go handleRow(msg.Channel, msg.Payload)
+			handleRow(msg.Channel, msg.Payload)
 		default:
 		}
 	}
@@ -227,24 +227,24 @@ func handleRow(key, row string) {
 	}
 
 	store.InsertDevice(&device)
-	deleteKey(key, 0)
+	deleteKey(key, 1)
 }
 
 func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
-	log.Printf("key %s status %s attempt %v", key, status, attempt)
+	log.Printf("key %s status %s attempt #%v", key, status, attempt)
 	if status.Val() == 1 {
 		return
 	}
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
-		fmt.Println("key %s not found", key)
+		fmt.Printf("key %s already deleted on master\n", key)
 		return
 	}
 
 	if attempt == 30 {
-		err := fmt.Errorf("Error with key %s status %s attempt %v", key, status, attempt)
+		err := fmt.Errorf("Error with key %s status %s attempt #%v", key, status, attempt)
 		fmt.Println("An error happened:", err)
 		os.Exit(1)
 	}
@@ -267,7 +267,7 @@ func handleBuffer() {
 				log.Printf("No data found for: %s", key)
 				return
 			}
-			go handleRow(key, payload)
+			handleRow(key, payload)
 		}
 		if err := iter.Err(); err != nil {
 			panic(err)
