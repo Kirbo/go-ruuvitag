@@ -144,8 +144,10 @@ func reloadNames() {
 			return
 		}
 
+		ping float32 := float32(device.Ping) / 1000
+
 		if found {
-			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", device.Ping, device.Name, device.Temperature, device.Humidity, device.Pressure, device.Battery))
+			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", ping, device.Name, device.Temperature, device.Humidity, device.Pressure, device.Battery))
 		}
 	}
 }
@@ -455,7 +457,7 @@ func handler(data ruuvitag.Measurement) {
 			panic(err)
 		}
 
-		ping = float64(timestamp-device.Timestamp) / 1000
+		ping = int64(timestamp-device.Timestamp)
 	}
 
 	var deviceStub = models.Device{
