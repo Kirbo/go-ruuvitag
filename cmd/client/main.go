@@ -19,14 +19,12 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/imdario/mergo"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/patrickmn/go-cache"
 	"github.com/peknur/ruuvitag"
 
 	"gitlab.com/kirbo/go-ruuvitag/internal/channels"
 	"gitlab.com/kirbo/go-ruuvitag/internal/models"
 )
 
-// Cache for variables
 var (
 	rdb        *redis.Client
 	config     models.Config
@@ -34,7 +32,6 @@ var (
 	mqttClient mqtt.Client
 	mqttConfig models.MQTTConfig
 
-	Cache        *cache.Cache    = cache.New(0, 0)
 	ctx          context.Context = context.Background()
 	namespace    string          = "/"
 	room         string          = ""
@@ -111,21 +108,36 @@ func loadConfigs() {
 	json.Unmarshal(byteValue, &config)
 
 	for i := 0; i < len(config.Ruuvitags); i++ {
-		sensor := config.Ruuvitags[i]
+		sensor := &config.Ruuvitags[i]
+		oldID := parseOldID(sensor.ID)
+		key := fmt.Sprintf("%s%s", channels.Device, oldID)
 
-		Cache.Set(fmt.Sprintf("name:%s", sensor.ID), sensor.Name, cache.NoExpiration)
-		if x, found := Cache.Get(fmt.Sprintf("%s%s", channels.Device, sensor.ID)); found {
-			device := x.(models.Device)
-			var (
-				ping        float32 = float32(device.Ping) / 1000
-				name                = device.Name
-				temperature         = device.Temperature
-				humidity            = device.Humidity
-				pressure    float32 = float32(device.Pressure) / 100
-				battery             = device.Battery
-			)
+		var device models.Device
+		var found bool = false
 
-			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", ping, name, temperature, humidity, pressure, battery))
+		val, err := rdb.Get(ctx, key).Result()
+		if err == nil {
+			found = true
+			device, err = parseMessage(val)
+			if err != nil {
+				return
+			}
+		}
+
+		device.Name = sensor.Name
+
+		redisData, err := stringifyMessage(device)
+		if err != nil {
+			return err
+		}
+
+		err = rdb.Set(ctx, key, redisData, 0).Err()
+		if err != nil {
+			return err
+		}
+
+		if found {
+			fmt.Println(fmt.Sprintf("%9.3fs ago - %-14s :: %7.2f °c, %6.2f %%H, %7.2f hPa, %5.3f v", device.Ping, device.Name, device.Temperature, device.Humidity, device.Pressure, device.Battery))
 		}
 	}
 }
@@ -311,6 +323,17 @@ func parseMessage(row string) (device models.Device, err error) {
 	return
 }
 
+func stringifyMessage(device models.Device) (stringified string, err error) {
+	stringified, err := json.Marshal(device)
+	if err != nil {
+		return
+	}
+
+	stringified = string(stringified)
+
+	return
+}
+
 func broadcastMessage(device models.Device) models.BroadcastMessage {
 	return models.BroadcastMessage{
 		Timestamp:   device.TimestampZ,
@@ -403,26 +426,26 @@ func initialDataForWebClient() (devices []models.BroadcastMessage, err error) {
 
 func handler(data ruuvitag.Measurement) {
 	var (
+		timestamp  = makeTimestamp()
 		address    = data.DeviceID()
 		addressOld = parseOldID(address)
-		ping       = int64(0)
-		name       = ""
+		ping       = timestamp
+		key        = fmt.Sprintf("%s%s", channels.Device, addressOld)
 	)
 
-	timestamp := makeTimestamp()
-	if value, found := Cache.Get(fmt.Sprintf("lastTimestamp:%s", address)); found {
-		var lastTimestamp = value.(int64)
-		ping = timestamp - lastTimestamp
-	}
-
-	if value, found := Cache.Get(fmt.Sprintf("name:%s", address)); found {
-		name = value.(string)
-	}
-
-	var device = models.Device{
+	var device models.Device{
 		ID:    address,
 		OldID: addressOld,
-		Name:  name,
+	}
+
+	row, err := rdb.Get(ctx, key).Result()
+	if err == nil {
+		device, err = parseMessage(row)
+		if err != nil {
+			panic(err)
+		}
+	
+		ping = timestamp - device.Timestamp
 	}
 
 	var deviceStub = models.Device{
@@ -445,21 +468,16 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
-	Cache.Set(fmt.Sprintf("%s%s", channels.Device, address), device, cache.NoExpiration)
-	Cache.Set(fmt.Sprintf("lastTimestamp:%s", address), timestamp, cache.NoExpiration)
-
-	// log.Printf("%s[v%d] %s : %+v", address, data.Format(), name, deviceStub)
-
-	redisData, err := json.Marshal(device)
+	redisData, err := stringifyMessage(device)
 	if err != nil {
 		panic(err)
 	}
 
 	if config.EnableSocket {
-		go broadcastDevice(string(redisData))
+		go broadcastDevice(redisData)
 	}
 
-	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), string(redisData)); err != nil {
+	if err = setAndPublish(fmt.Sprintf("%s%s", channels.Device, addressOld), redisData); err != nil {
 		panic(err)
 	}
 }
