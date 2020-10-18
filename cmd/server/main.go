@@ -227,31 +227,28 @@ func handleRow(key, row string) {
 	}
 
 	store.InsertDevice(&device)
-	deleteKey(key)
+	deleteKey(key, 0)
 }
 
-func deleteKey(key string) {
+func deleteKey(key string, count int) {
 	status := rdb.Del(ctx, key)
 	log.Printf("key %s status %s", key, status)
 	if status.Val() == 1 {
 		return
 	}
 
-	for i := 0; i < 60; i++ {
-		log.Printf("key %s retry in second", key)
-		time.Sleep(time.Second)
-		status = rdb.Del(ctx, key)
-		log.Printf("key %s status %s", key, status)
-		if status.Val() == 1 {
-			break
-		}
+	payload, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return
+	}
 
-		if i == 30 {
-			// panic(fmt.Sprintf("Error with key %s status %s", key, status))
-			err := fmt.Errorf("Error with key %s status %s", key, status)
-			fmt.Println("An error happened:", err)
-			os.Exit(1)
-		}
+	time.Sleep(time.Second)
+	count = count + 1
+
+	if count == 30 {
+		err := fmt.Errorf("Error with key %s status %s", key, status)
+		fmt.Println("An error happened:", err)
+		os.Exit(1)
 	}
 }
 
