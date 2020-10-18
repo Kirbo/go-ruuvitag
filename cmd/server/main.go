@@ -233,7 +233,12 @@ func handleRow(key, row string) {
 func deleteKey(key string, attempt int) {
 	status := rdb.Del(ctx, key)
 	if status.Val() == 1 {
-		return
+		time.Sleep(time.Second)
+
+		_, err := rdb.Get(ctx, key).Result()
+		if err != nil {
+			return
+		}
 	}
 
 	if attempt == 10 {
