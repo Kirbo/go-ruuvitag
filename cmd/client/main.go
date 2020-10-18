@@ -324,12 +324,13 @@ func parseMessage(row string) (device models.Device, err error) {
 }
 
 func stringifyMessage(device models.Device) (stringified string, err error) {
-	stringified []byte, err = json.Marshal(device)
+	marhalled := []byte
+	marhalled, err = json.Marshal(device)
 	if err != nil {
 		return
 	}
 
-	stringified = string(stringified)
+	stringified = string(marhalled)
 
 	return
 }
