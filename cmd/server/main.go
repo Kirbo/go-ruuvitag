@@ -251,7 +251,7 @@ func deleteKey(key string, attempt int) {
 	attempt = attempt + 1
 	log.Printf("Error deleting key %s, retrying in %v seconds", key, waitForSeconds)
 
-	time.Sleep((waitForSeconds * time.Second)
+	time.Sleep(waitForSeconds * time.Second)
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
