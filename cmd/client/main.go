@@ -257,7 +257,9 @@ func startSocketIOServer() {
 }
 
 func createInserts() {
-	log.Print("Inserting to Database...")
+	if config.LogInserts {
+		log.Print("Inserting to Database...")
+	}
 
 	for i := range config.Ruuvitags {
 		sensor := &config.Ruuvitags[i]
@@ -323,7 +325,9 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 }
 
 func broadcastDevice(row string) {
-	log.Print("Broadcasting to Socket.IO...")
+	if config.LogSocket {
+		log.Print("Broadcasting to Socket.IO...")
+	}
 
 	device, err := parseMessage(row)
 	if err != nil {
@@ -336,7 +340,9 @@ func broadcastDevice(row string) {
 }
 
 func broadcastMQTTDevices() {
-	log.Print("Publishing to MQTT...")
+	if config.LogMQTT {
+		log.Print("Publishing to MQTT...")
+	}
 
 	for i := range config.Ruuvitags {
 		sensor := &config.Ruuvitags[i]

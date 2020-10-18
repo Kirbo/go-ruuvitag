@@ -4,6 +4,9 @@
   "enableSocket": true,
   "enableMQTT": true,
   "enableRedis": true,
+  "logSocket": false,
+  "logMQTT": true,
+  "LogInserts": true,
   "ruuvitags": [
     {
       "name": "Sauna",
