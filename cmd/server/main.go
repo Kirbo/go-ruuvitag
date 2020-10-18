@@ -73,7 +73,7 @@ func connectPostgres() {
 		panic(err)
 	}
 
-	fmt.Println("Successfully connected!")
+	log.Println("Successfully connected!")
 
 	InitStore(&dbStore{db: dbConn})
 }
@@ -110,7 +110,7 @@ func startSocketIOServer() {
 		id := s.ID()
 		s.Join(room)
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v    connected ID '%v'\n", clientCount, id)
+		log.Printf("clientCount: %v    connected ID '%v'\n", clientCount, id)
 
 		devices, err := initialDataForWebClient()
 		if err != nil {
@@ -125,14 +125,14 @@ func startSocketIOServer() {
 	server.OnError(namespace, func(s socketio.Conn, e error) {
 		s.Close()
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v    error %+v\n", clientCount, e)
+		log.Printf("clientCount: %v    error %+v\n", clientCount, e)
 	})
 
 	server.OnDisconnect(namespace, func(s socketio.Conn, reason string) {
 		id := s.ID()
 		s.Close()
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
+		log.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
 	})
 
 	wg := sync.WaitGroup{}
@@ -238,7 +238,7 @@ func deleteKey(key string, attempt int) {
 
 	if attempt == 10 {
 		err := fmt.Errorf("Error deleting key %s status %s attempt #%v", key, status, attempt)
-		fmt.Println("An error happened:", err)
+		log.Println("An error happened:", err)
 		os.Exit(1)
 	}
 
@@ -251,11 +251,11 @@ func deleteKey(key string, attempt int) {
 
 	_, err := rdb.Get(ctx, key).Result()
 	if err != nil {
-		fmt.Printf("key %s already deleted on master\n", key)
+		log.Printf("key %s already deleted on master\n", key)
 		return
 	}
 
-	fmt.Printf("attempt #%v for key %s\n", attempt, key)
+	log.Printf("attempt #%v for key %s\n", attempt, key)
 	deleteKey(key, attempt)
 }
 
