@@ -288,6 +288,7 @@ func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
 	if err != nil {
+		log.Printf("cmd: %+v", cmd)
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
 	}
@@ -300,6 +301,7 @@ func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
 	if err != nil {
+		log.Printf("cmd: %+v", cmd)
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
 	}
