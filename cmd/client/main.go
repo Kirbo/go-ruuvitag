@@ -292,7 +292,7 @@ func turnPS4On(c *gin.Context) {
 	// 	c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
 	// }
 
-	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337")
+	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337", true)
 
 	c.String(http.StatusOK, "Turned on")
 }
@@ -306,7 +306,7 @@ func turnPS4Off(c *gin.Context) {
 	// 	c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
 	// }
 
-	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby")
+	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby", true)
 
 	c.String(http.StatusOK, "Turned off")
 }
