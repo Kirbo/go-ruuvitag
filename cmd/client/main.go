@@ -284,7 +284,7 @@ func startSocketIOServer() {
 }
 
 func turnPS4On(c *gin.Context) {
-	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337")
+	out, err := exec.Command("./scripts/control-ps4.sh").Output()
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
 	if err != nil {
@@ -298,7 +298,7 @@ func turnPS4On(c *gin.Context) {
 
 func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	out, err := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby").Output()
+	out, err := exec.Command("./scripts/control-ps4.sh", "standby").Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
