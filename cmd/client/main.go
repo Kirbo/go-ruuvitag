@@ -271,8 +271,8 @@ func startSocketIOServer() {
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
-	router.GET("/turn_ps4_on", turnPS4On)
-	router.GET("/turn_ps4_off", turnPS4Off)
+	router.GET("/turn_ps4_on", turnPS4On())
+	router.GET("/turn_ps4_off", turnPS4Off())
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
