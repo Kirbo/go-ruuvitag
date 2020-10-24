@@ -289,6 +289,7 @@ func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	_, filename, _, _ := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
+	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
@@ -305,6 +306,7 @@ func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	_, filename, _, _ := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
+	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
