@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -270,6 +271,8 @@ func startSocketIOServer() {
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
+	router.GET("/turn_ps4_on", turnPS4On)
+	router.GET("/turn_ps4_off", turnPS4Off)
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
@@ -277,6 +280,20 @@ func startSocketIOServer() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func turnPS4On() {
+	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337")
+	log.Printf("Running command and waiting for it to finish...")
+	err := cmd.Run()
+	log.Printf("Command finished with error: %v", err)
+}
+
+func turnPS4Off() {
+	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby")
+	log.Printf("Running command and waiting for it to finish...")
+	err := cmd.Run()
+	log.Printf("Command finished with error: %v", err)
 }
 
 func createInserts() {
