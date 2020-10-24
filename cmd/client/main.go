@@ -288,7 +288,7 @@ func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
-	out, err := exec.Command("/bin/sh", filepath).Output()
+	out, err := exec.Command(filepath).Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
@@ -304,7 +304,7 @@ func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
 	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
-	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
+	out, err := exec.Command("/bin/bash", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
