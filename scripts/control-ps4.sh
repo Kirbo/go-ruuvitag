@@ -35,9 +35,4 @@ cd ${BASE_DIR}
 
 ARGS=$@
 
-if [[ -z "${ARGS}" ]]; then
-    printUsage
-    exit
-fi
-
-/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby ${ARGS} > ~/logs/control-ps4.log
+/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 ${ARGS} > ~/logs/control-ps4.log
