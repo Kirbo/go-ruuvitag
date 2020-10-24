@@ -29,10 +29,7 @@ echo -ne "${NORMAL}"
 
 SCRIPTS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source "${SCRIPTS_DIR}/_includes/_main.sh"
-source "${BASE_DIR}/.env"
-
-cd ${BASE_DIR}
 
 ARGS=$@
 
-/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 ${ARGS} > ~/logs/control-ps4.log
+/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 ${ARGS} >> ~/logs/control-ps4.log
