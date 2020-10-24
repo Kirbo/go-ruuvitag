@@ -297,16 +297,17 @@ func turnPS4On(c *gin.Context) {
 }
 
 func turnPS4Off(c *gin.Context) {
-	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby")
 	log.Printf("Running command and waiting for it to finish...")
-	err := cmd.Run()
+	out, err := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby").Output()
+	log.Printf("out: %+v", out)
 	if err != nil {
-		log.Printf("cmd: %+v", cmd)
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		return
 	}
 
 	c.String(http.StatusOK, "Turned off")
+	return
 }
 
 func createInserts() {
