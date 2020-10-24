@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -291,6 +292,7 @@ func turnPS4On(c *gin.Context) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	_, filename, _, ok := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "./scripts/control-ps4.sh")
 	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
@@ -311,6 +313,7 @@ func turnPS4Off(c *gin.Context) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	_, filename, _, ok := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "./scripts/control-ps4.sh")
 	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
