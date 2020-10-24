@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -290,7 +291,8 @@ func turnPS4On(c *gin.Context) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	out, err := exec.Command("/bin/sh", currentPath, "/scripts/control-ps4.sh").Output()
+	filepath := path.Join(path.Dir(filename), "./scripts/control-ps4.sh")
+	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
@@ -309,7 +311,8 @@ func turnPS4Off(c *gin.Context) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	out, err := exec.Command("/bin/sh", currentPath, "/scripts/control-ps4.sh", "standby").Output()
+	filepath := path.Join(path.Dir(filename), "./scripts/control-ps4.sh")
+	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
