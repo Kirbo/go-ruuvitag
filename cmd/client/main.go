@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
 	"path"
 	"strings"
 	"sync"
@@ -285,25 +284,9 @@ func startSocketIOServer() {
 	}
 }
 
-func getHomeDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	return usr.HomeDir, nil
-}
-
 func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	homeDir, err := getHomeDir()
-	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
-		return
-	}
-
-	filepath := path.Join(path.Dir(homeDir), "projects/go-ruuvitag/scripts/control-ps4.sh")
+	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
@@ -319,13 +302,7 @@ func turnPS4On(c *gin.Context) {
 
 func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	homeDir, err := getHomeDir()
-	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
-		return
-	}
-
-	filepath := path.Join(path.Dir(homeDir), "projects/go-ruuvitag/scripts/control-ps4.sh")
+	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
