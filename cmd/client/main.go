@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/user"
 	"path"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -285,10 +285,25 @@ func startSocketIOServer() {
 	}
 }
 
+func getHomeDir() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return usr.HomeDir, nil
+}
+
 func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	_, filename, _, _ := runtime.Caller(1)
-	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
+	homeDir, err := getHomeDir()
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		return
+	}
+
+	filepath := path.Join(path.Dir(homeDir), "projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
@@ -304,8 +319,13 @@ func turnPS4On(c *gin.Context) {
 
 func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	_, filename, _, _ := runtime.Caller(1)
-	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
+	homeDir, err := getHomeDir()
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		return
+	}
+
+	filepath := path.Join(path.Dir(homeDir), "projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
