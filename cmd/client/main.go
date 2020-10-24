@@ -284,16 +284,17 @@ func startSocketIOServer() {
 }
 
 func turnPS4On(c *gin.Context) {
-	out, err := exec.Command("./scripts/control-ps4.sh").Output()
 	log.Printf("Running command and waiting for it to finish...")
-	err := cmd.Run()
+	out, err := exec.Command("./scripts/control-ps4.sh").Output()
+	log.Printf("out: %+v", out)
 	if err != nil {
-		log.Printf("cmd: %+v", cmd)
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		return
 	}
 
 	c.String(http.StatusOK, "Turned on")
+	return
 }
 
 func turnPS4Off(c *gin.Context) {
