@@ -289,7 +289,7 @@ func getHomeDir() (string, error) {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
+		return _, err
 	}
 
 	return usr.HomeDir, nil
