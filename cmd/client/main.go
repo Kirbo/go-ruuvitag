@@ -271,8 +271,8 @@ func startSocketIOServer() {
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
-	router.GET("/turn_ps4_on", turnPS4On())
-	router.GET("/turn_ps4_off", turnPS4Off())
+	router.GET("/turn_ps4_on", turnPS4On)
+	router.GET("/turn_ps4_off", turnPS4Off)
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
@@ -282,14 +282,14 @@ func startSocketIOServer() {
 	}
 }
 
-func turnPS4On() {
+func turnPS4On() gin.HandlerFunc {
 	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337")
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
 	log.Printf("Command finished with error: %v", err)
 }
 
-func turnPS4Off() {
+func turnPS4Off() gin.HandlerFunc {
 	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby")
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
