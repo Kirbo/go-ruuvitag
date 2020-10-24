@@ -287,7 +287,7 @@ func startSocketIOServer() {
 
 func turnPS4On(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	_, filename, _, ok := runtime.Caller(1)
+	_, filename, _, _ := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
 	out, err := exec.Command("/bin/sh", filepath).Output()
 	log.Printf("out: %+v", out)
@@ -303,7 +303,7 @@ func turnPS4On(c *gin.Context) {
 
 func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	_, filename, _, ok := runtime.Caller(1)
+	_, filename, _, _ := runtime.Caller(1)
 	filepath := path.Join(path.Dir(filename), "scripts/control-ps4.sh")
 	out, err := exec.Command("/bin/sh", filepath, "standby").Output()
 	log.Printf("out: %+v", out)
