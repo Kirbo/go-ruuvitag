@@ -6,11 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
-	"path"
 	"strings"
 	"sync"
 	"time"
@@ -273,8 +270,6 @@ func startSocketIOServer() {
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
-	router.GET("/turn_ps4_on", turnPS4On)
-	router.GET("/turn_ps4_off", turnPS4Off)
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
@@ -282,38 +277,6 @@ func startSocketIOServer() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func turnPS4On(c *gin.Context) {
-	log.Printf("Running command and waiting for it to finish...")
-	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
-	log.Printf("filepath: %s", filepath)
-	out, err := exec.Command(filepath).Output()
-	log.Printf("out: %+v", string(out))
-	if err != nil {
-		log.Printf("Command finished with error: %v", err)
-		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
-		return
-	}
-
-	c.String(http.StatusOK, "Turned on")
-	return
-}
-
-func turnPS4Off(c *gin.Context) {
-	log.Printf("Running command and waiting for it to finish...")
-	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
-	log.Printf("filepath: %s", filepath)
-	out, err := exec.Command("/bin/bash", filepath, "standby").Output()
-	log.Printf("out: %+v", string(out))
-	if err != nil {
-		log.Printf("Command finished with error: %v", err)
-		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
-		return
-	}
-
-	c.String(http.StatusOK, "Turned off")
-	return
 }
 
 func createInserts() {
