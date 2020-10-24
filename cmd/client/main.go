@@ -293,6 +293,7 @@ func turnPS4On(c *gin.Context) {
 	// }
 
 	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337", true)
+	log.Printf("Running command and waiting for it to finish... %+v", out)
 
 	c.String(http.StatusOK, "Turned on")
 }
@@ -307,6 +308,7 @@ func turnPS4Off(c *gin.Context) {
 	// }
 
 	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby", true)
+	log.Printf("Running command and waiting for it to finish... %+v", out)
 
 	c.String(http.StatusOK, "Turned off")
 }
