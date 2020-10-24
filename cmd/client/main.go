@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -282,18 +283,28 @@ func startSocketIOServer() {
 	}
 }
 
-func turnPS4On() gin.HandlerFunc {
+func turnPS4On(c *gin.Context) {
 	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337")
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
-	log.Printf("Command finished with error: %v", err)
+	if err != nil {
+		log.Printf("Command finished with error: %v", err)
+		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+	}
+
+	c.String(http.StatusOK, "Turned on")
 }
 
-func turnPS4Off() gin.HandlerFunc {
+func turnPS4Off(c *gin.Context) {
 	cmd := exec.Command("/home/pi/.yarn/bin/ps4-waker", "-c", "/home/pi/.ps4-wake.credentials.json", "-d", "192.168.1.207", "--pass", "1337", "standby")
 	log.Printf("Running command and waiting for it to finish...")
 	err := cmd.Run()
-	log.Printf("Command finished with error: %v", err)
+	if err != nil {
+		log.Printf("Command finished with error: %v", err)
+		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+	}
+
+	c.String(http.StatusOK, "Turned off")
 }
 
 func createInserts() {
