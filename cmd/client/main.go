@@ -289,7 +289,7 @@ func turnPS4On(c *gin.Context) {
 	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command(filepath).Output()
-	log.Printf("out: %+v", out.string())
+	log.Printf("out: %+v", string(out))
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
@@ -305,7 +305,7 @@ func turnPS4Off(c *gin.Context) {
 	filepath := path.Join("/home/pi/projects/go-ruuvitag/scripts/control-ps4.sh")
 	log.Printf("filepath: %s", filepath)
 	out, err := exec.Command("/bin/bash", filepath, "standby").Output()
-	log.Printf("out: %+v", out.string())
+	log.Printf("out: %+v", string(out))
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
