@@ -307,7 +307,7 @@ func turnPS4Off(c *gin.Context) {
 	// 	c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
 	// }
 
-	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby", true)
+	out := Cmd("/home/pi/.yarn/bin/ps4-waker -c /home/pi/.ps4-wake.credentials.json -d 192.168.1.207 --pass 1337 standby", false)
 	log.Printf("Running command and waiting for it to finish... %+v", out)
 
 	c.String(http.StatusOK, "Turned off")
