@@ -299,7 +299,7 @@ func turnPS4On(c *gin.Context) {
 
 func turnPS4Off(c *gin.Context) {
 	log.Printf("Running command and waiting for it to finish...")
-	out, err := exec.Command("./scripts/control-ps4.sh", "standby").Output()
+	out, err := exec.Command("ls", "-la").Output()
 	log.Printf("out: %+v", out)
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
