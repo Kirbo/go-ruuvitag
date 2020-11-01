@@ -228,7 +228,7 @@ func handleRow(key, row string) {
 	}
 
 	store.InsertDevice(&device)
-	deleteKey(key, 1)
+	go deleteKey(key, 1)
 }
 
 func deleteKey(key string, attempt int) {
@@ -277,7 +277,7 @@ func handleBuffer() {
 				log.Printf("No data found for: %s", key)
 				return
 			}
-			handleRow(key, payload)
+			go handleRow(key, payload)
 		}
 		if err := iter.Err(); err != nil {
 			panic(err)
