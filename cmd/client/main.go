@@ -457,7 +457,12 @@ func broadcastSocketDevices() {
 
 		device.Ping = int64(timestamp - device.Timestamp)
 
-		go broadcastDevice(device)
+		redisData, err := stringifyMessage(device)
+		if err != nil {
+			panic(err)
+		}
+
+		go broadcastDevice(redisData)
 	}
 }
 
