@@ -391,7 +391,7 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 }
 
 func broadcastDevice(row string) {
-	if config.LogSocket {
+	if config.LogSocket && config.PushSocketImmediatelly {
 		log.Print("Broadcasting to Socket.IO...")
 	}
 
