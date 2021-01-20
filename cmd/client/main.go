@@ -196,6 +196,21 @@ func startTickers() {
 			}
 		}()
 	}
+
+	if config.EnableSocket && config.PushSocketOnIntervals {
+		mqttTicker := time.NewTicker(time.Duration(config.SocketInterval) * time.Second)
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-mqttTicker.C:
+					broadcastSocketDevices()
+				}
+			}
+		}()
+	}
 }
 
 func GinMiddleware(allowOrigin string) gin.HandlerFunc {
@@ -418,6 +433,34 @@ func broadcastMQTTDevices() {
 	}
 }
 
+func broadcastSocketDevices() {
+	if config.LogSocket {
+		log.Print("Publishing to Socket.io...")
+	}
+
+	for i := range config.Ruuvitags {
+		sensor := &config.Ruuvitags[i]
+
+		timestamp := makeTimestamp()
+		oldID := parseOldID(sensor.ID)
+
+		val, err := rdb.Get(ctx, fmt.Sprintf("%s%s", channels.Device, oldID)).Result()
+		if err != nil {
+			log.Printf("No data found for: %s", sensor.Name)
+			return
+		}
+
+		device, err := parseMessage(val)
+		if err != nil {
+			panic(err)
+		}
+
+		device.Ping = int64(timestamp - device.Timestamp)
+
+		go broadcastDevice(device)
+	}
+}
+
 func broadcastMQTTDevice(device models.Device) {
 	topic := fmt.Sprintf("ruuvitag/%v", device.ID)
 
@@ -503,7 +546,7 @@ func handler(data ruuvitag.Measurement) {
 		panic(err)
 	}
 
-	if config.EnableSocket {
+	if config.EnableSocket && config.PushSocketImmediatelly {
 		go broadcastDevice(redisData)
 	}
 
