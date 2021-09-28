@@ -27,7 +27,6 @@ import (
 
 var (
 	rdb        *redis.Client
-	rdbPubSub  *redis.Client
 	config     models.Config
 	server     *socketio.Server
 	mqttClient mqtt.Client
@@ -48,11 +47,6 @@ func connectRedis() {
 	)
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
-		Password: redisPassword,
-		DB:       0,
-	})
-	rdbPubSub = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
 		Password: redisPassword,
 		DB:       0,
@@ -577,7 +571,7 @@ func handler(data ruuvitag.Measurement) {
 func subscribes() {
 	log.Print("Subscribe to channels...")
 	var reload = fmt.Sprintf("%s%s", channels.Reload, "*")
-	pubsub := rdbPubSub.PSubscribe(ctx, reload)
+	pubsub := rdb.PSubscribe(ctx, reload)
 
 	_, err := pubsub.Receive(ctx)
 	if err != nil {
@@ -624,10 +618,9 @@ func main() {
 	}
 	startTickers()
 
-	log.Print("Start scanning...")
 	go startScanning()
-	log.Print("Scanning started!")
+	
 	if config.EnableRedis {
-		subscribes()
+		go subscribes()
 	}
 }
