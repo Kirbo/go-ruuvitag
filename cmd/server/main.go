@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sync"
 	"time"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -150,6 +151,16 @@ func startSocketIOServer() {
 	defer server.Close()
 
 	router.Use(GinMiddleware("*"))
+	router.GET("/request-client-refresh", func(c *gin.Context) {
+		var timestamp = makeTimestamp()
+		err = rdbSlave.Publish(ctx, channels.Reload, timestamp).Err()
+		if err != nil {
+			return err
+		}
+
+		broadcastClients("update", "")
+		c.String(http.StatusOK, "ok")
+	})
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
@@ -163,8 +174,9 @@ func subscribes() {
 	var (
 		devices = fmt.Sprintf("%s%s", channels.Device, "*")
 		inserts = fmt.Sprintf("%s%s", channels.Insert, "*")
+		reload = fmt.Sprintf("%s%s", channels.Reload, "*")
 	)
-	pubsub := rdbSlave.PSubscribe(ctx, devices, inserts)
+	pubsub := rdbSlave.PSubscribe(ctx, devices, inserts, reload)
 
 	_, err := pubsub.Receive(ctx)
 	if err != nil {
@@ -174,9 +186,11 @@ func subscribes() {
 	ch := pubsub.Channel()
 
 	for msg := range ch {
-		re := regexp.MustCompile(fmt.Sprintf(`^%s|%s`, channels.Device, channels.Insert))
+		re := regexp.MustCompile(fmt.Sprintf(`^%s|%s|%s`, channels.Device, channels.Insert, channels.Reload))
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
+		case channels.Reload:
+			go broadcastClients(msg.Payload)
 		case channels.Device:
 			go broadcastDevice(msg.Payload)
 		case channels.Insert:
@@ -206,6 +220,10 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 		Battery:     device.Battery,
 		Humidity:    device.Humidity,
 	}
+}
+
+func broadcastClients(event string, message string) {
+	server.BroadcastToRoom(namespace, room, event, message)
 }
 
 func broadcastDevice(row string) {

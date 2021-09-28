@@ -64,8 +64,6 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
-docker-compose up -d
-
 Other methods to try:
 1. First try this: `curl -fsSL https://get.docker.com | bash`, or:
 2. https://withblue.ink/2019/07/13/yes-you-can-run-docker-on-raspbian.html
@@ -76,7 +74,7 @@ Other methods to try:
 
 ### Configure Redis master
 
-Modify the `/etc/redis/redis.conf´ file.
+Modify the `/etc/redis/redis.conf` file.
 Comment the line `bind 127.0.0.1 ::1`, around line 50
 
 At the end of it, add the following:

@@ -390,6 +390,10 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 	}
 }
 
+func broadcastClients(event string, message string) {
+	server.BroadcastToRoom(namespace, room, event, message)
+}
+
 func broadcastDevice(row string) {
 	if config.LogSocket && config.PushSocketImmediatelly {
 		log.Print("Broadcasting to Socket.IO...")
@@ -562,11 +566,34 @@ func handler(data ruuvitag.Measurement) {
 	}
 }
 
+func subscribes() {
+	pubsub := rdb.PSubscribe(ctx, channels.Reload)
+
+	_, err := pubsub.Receive(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	ch := pubsub.Channel()
+
+	for msg := range ch {
+		re := regexp.MustCompile(fmt.Sprintf(`^%s`, channels.Reload))
+		foundChannel := re.FindString(string(msg.Channel))
+		switch foundChannel {
+		case channels.Reload:
+			go broadcastClients(msg.Payload)
+		default:
+		}
+	}
+}
+
+
 func main() {
 	loadConfigs()
 
 	if config.EnableRedis {
 		connectRedis()
+		subscribes()
 	}
 	if config.EnableMQTT {
 		connectMQTT()
