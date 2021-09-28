@@ -595,7 +595,6 @@ func main() {
 
 	if config.EnableRedis {
 		connectRedis()
-		go subscribes()
 	}
 	if config.EnableMQTT {
 		connectMQTT()
@@ -614,5 +613,8 @@ func main() {
 	for {
 		data := <-output
 		go handler(data)
+	}
+	if config.EnableRedis {
+		subscribes()
 	}
 }
