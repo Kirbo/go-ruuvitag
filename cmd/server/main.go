@@ -194,7 +194,7 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Reload:
-			go broadcastClients(msg.Payload)
+			go broadcastClients(msg.Channel, msg.Payload)
 		case channels.Device:
 			go broadcastDevice(msg.Payload)
 		case channels.Insert:
