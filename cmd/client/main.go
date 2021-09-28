@@ -27,6 +27,7 @@ import (
 
 var (
 	rdb        *redis.Client
+	rdbPubSub  *redis.Client
 	config     models.Config
 	server     *socketio.Server
 	mqttClient mqtt.Client
