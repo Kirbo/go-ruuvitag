@@ -590,6 +590,18 @@ func subscribes() {
 	}
 }
 
+func startScanning() {
+	scanner, err := ruuvitag.OpenScanner(10)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := scanner.Start()
+	for {
+		data := <-output
+		go handler(data)
+	}
+}
 
 func main() {
 	loadConfigs()
@@ -605,16 +617,7 @@ func main() {
 	}
 	startTickers()
 
-	scanner, err := ruuvitag.OpenScanner(10)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := scanner.Start()
-	for {
-		data := <-output
-		go handler(data)
-	}
+	startScanning()
 	if config.EnableRedis {
 		subscribes()
 	}
