@@ -594,7 +594,7 @@ func main() {
 
 	if config.EnableRedis {
 		connectRedis()
-		subscribes()
+		go subscribes()
 	}
 	if config.EnableMQTT {
 		connectMQTT()
