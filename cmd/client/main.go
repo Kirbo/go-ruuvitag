@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"regexp"
 	"os"
 	"strings"
 	"sync"
@@ -581,7 +582,7 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Reload:
-			go broadcastClients(msg.Payload)
+			go broadcastClients(msg.Channel, msg.Payload)
 		default:
 		}
 	}
