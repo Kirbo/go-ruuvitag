@@ -392,8 +392,10 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 }
 
 func broadcastClients(event string, message string) {
-	log.Print(fmt.Sprintf("%s - %s", event, message))
-	server.BroadcastToRoom(namespace, room, event, message)
+	if config.EnableSocket {
+		log.Print(fmt.Sprintf("%s - %s", event, message))
+		server.BroadcastToRoom(namespace, room, event, message)
+	}
 }
 
 func broadcastDevice(row string) {
@@ -609,6 +611,7 @@ func main() {
 
 	if config.EnableRedis {
 		connectRedis()
+		go subscribes()
 	}
 	if config.EnableMQTT {
 		connectMQTT()
@@ -619,8 +622,4 @@ func main() {
 	startTickers()
 
 	go startScanning()
-	
-	if config.EnableRedis {
-		go subscribes()
-	}
 }
