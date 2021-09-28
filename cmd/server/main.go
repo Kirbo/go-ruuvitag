@@ -98,6 +98,10 @@ func GinMiddleware(allowOrigin string) gin.HandlerFunc {
 	}
 }
 
+func makeTimestamp() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
 func startSocketIOServer() {
 	var err error
 
@@ -155,7 +159,7 @@ func startSocketIOServer() {
 		var timestamp = makeTimestamp()
 		err = rdbSlave.Publish(ctx, channels.Reload, timestamp).Err()
 		if err != nil {
-			return err
+			log.Printf("request-client-refresh error: %s'\n", err)
 		}
 
 		broadcastClients("reload", "")
