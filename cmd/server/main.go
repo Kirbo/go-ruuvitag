@@ -161,8 +161,6 @@ func startSocketIOServer() {
 		if err != nil {
 			log.Printf("request-client-refresh error: %s'\n", err)
 		}
-
-		broadcastClients("reload", "")
 		c.String(http.StatusOK, "ok")
 	})
 	router.GET("/socket.io/*any", gin.WrapH(server))
@@ -193,6 +191,8 @@ func subscribes() {
 		re := regexp.MustCompile(fmt.Sprintf(`^%s|%s|%s`, channels.Device, channels.Insert, channels.Reload))
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
+		case channels.Reload:
+			go broadcastClients(msg.Channel, msg.Payload)
 		case channels.Device:
 			go broadcastDevice(msg.Payload)
 		case channels.Insert:
