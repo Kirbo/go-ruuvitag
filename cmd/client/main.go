@@ -617,7 +617,9 @@ func main() {
 	}
 	startTickers()
 
-	startScanning()
+	log.Print("Start scanning...")
+	go startScanning()
+	log.Print("Scanning started...")
 	if config.EnableRedis {
 		subscribes()
 	}
