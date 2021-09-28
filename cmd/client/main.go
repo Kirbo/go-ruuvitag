@@ -613,13 +613,15 @@ func main() {
 		connectRedis()
 		go subscribes()
 	}
+	
 	if config.EnableMQTT {
 		connectMQTT()
 	}
+	
 	if config.EnableSocket {
 		go startSocketIOServer()
 	}
-	startTickers()
 
-	go startScanning()
+	startTickers()
+	startScanning()
 }
