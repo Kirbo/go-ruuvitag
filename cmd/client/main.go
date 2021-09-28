@@ -51,6 +51,11 @@ func connectRedis() {
 		Password: redisPassword,
 		DB:       0,
 	})
+	rdbPubSub = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
+		Password: redisPassword,
+		DB:       0,
+	})
 
 	reloadNames()
 }
@@ -571,7 +576,7 @@ func handler(data ruuvitag.Measurement) {
 func subscribes() {
 	log.Print("Subscribe to channels...")
 	var reload = fmt.Sprintf("%s%s", channels.Reload, "*")
-	pubsub := rdb.PSubscribe(ctx, reload)
+	pubsub := rdbPubSub.PSubscribe(ctx, reload)
 
 	_, err := pubsub.Receive(ctx)
 	if err != nil {
