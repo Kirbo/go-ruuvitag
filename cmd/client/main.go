@@ -569,6 +569,7 @@ func handler(data ruuvitag.Measurement) {
 }
 
 func subscribes() {
+	log.Print("Subscribe to channels...")
 	pubsub := rdb.PSubscribe(ctx, channels.Reload)
 
 	_, err := pubsub.Receive(ctx)
