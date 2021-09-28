@@ -157,7 +157,7 @@ func startSocketIOServer() {
 	router.Use(GinMiddleware("*"))
 	router.GET("/request-client-refresh", func(c *gin.Context) {
 		var timestamp = makeTimestamp()
-		err = rdbSlave.Publish(ctx, channels.Reload, timestamp).Err()
+		err = rdb.Publish(ctx, channels.Reload, timestamp).Err()
 		if err != nil {
 			log.Printf("request-client-refresh error: %s'\n", err)
 		}
