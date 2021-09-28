@@ -570,7 +570,8 @@ func handler(data ruuvitag.Measurement) {
 
 func subscribes() {
 	log.Print("Subscribe to channels...")
-	pubsub := rdb.PSubscribe(ctx, channels.Reload)
+	var reload = fmt.Sprintf("%s%s", channels.Reload, "*")
+	pubsub := rdb.PSubscribe(ctx, reload)
 
 	_, err := pubsub.Receive(ctx)
 	if err != nil {
@@ -619,7 +620,7 @@ func main() {
 
 	log.Print("Start scanning...")
 	go startScanning()
-	log.Print("Scanning started...")
+	log.Print("Scanning started!")
 	if config.EnableRedis {
 		subscribes()
 	}
