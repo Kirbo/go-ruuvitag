@@ -158,7 +158,7 @@ func startSocketIOServer() {
 			return err
 		}
 
-		broadcastClients("update", "")
+		broadcastClients("reload", "")
 		c.String(http.StatusOK, "ok")
 	})
 	router.GET("/socket.io/*any", gin.WrapH(server))
