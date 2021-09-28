@@ -193,8 +193,6 @@ func subscribes() {
 		re := regexp.MustCompile(fmt.Sprintf(`^%s|%s|%s`, channels.Device, channels.Insert, channels.Reload))
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
-		case channels.Reload:
-			go broadcastClients(msg.Channel, msg.Payload)
 		case channels.Device:
 			go broadcastDevice(msg.Payload)
 		case channels.Insert:
