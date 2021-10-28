@@ -10,7 +10,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -271,20 +270,11 @@ func startSocketIOServer() {
 		fmt.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
 	})
 
-	wg := sync.WaitGroup{}
-
-	go func() {
-		fmt.Printf("Ennen serve\n")
-		err = server.Serve()
-		fmt.Printf("Serve jälkeen\n")
-		if err != nil {
-			panic(err)
-		}
-		wg.Done()
-	}()
-	wg.Add(1)
-
+	fmt.Printf("Ennen serve()\n")
+	go server.Serve()
+	fmt.Printf("Serve() jälkeen\n")
 	defer server.Close()
+	fmt.Printf("Server.close() jälkeen\n")
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
