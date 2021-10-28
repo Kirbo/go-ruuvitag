@@ -418,7 +418,6 @@ func broadcastDevice(row string) {
 	}
 
 	broadcastMsg := broadcastMessage(device)
-	log.Print("Called broadcastDevice()")
 
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
 }
@@ -455,8 +454,6 @@ func broadcastSocketDevices() {
 	if config.LogSocket {
 		log.Print("Publishing to Socket.io...")
 	}
-
-	log.Print("Called broadcastSocketDevices()...")
 
 	for i := range config.Ruuvitags {
 		sensor := &config.Ruuvitags[i]
@@ -572,7 +569,6 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	if config.EnableSocket && config.PushSocketImmediatelly {
-		log.Print("Woop...")
 		go broadcastDevice(redisData)
 	}
 
@@ -600,6 +596,7 @@ func subscribes() {
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Reload:
+			log.Print("Reload...")
 			go broadcastClients(msg.Channel, msg.Payload)
 		default:
 		}
