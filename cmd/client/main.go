@@ -67,14 +67,14 @@ func connectMQTT() {
 		json.Unmarshal(byteValue, &mqttConfig)
 
 		uriString := fmt.Sprintf("tcp://%s:%s@%s:%v", mqttConfig.User.Username, mqttConfig.User.Password, mqttConfig.Host, mqttConfig.Port)
-		fmt.Printf("uriString: %s\n", uriString)
+		log.Printf("uriString: %s\n", uriString)
 
 		uri, err := url.Parse(uriString)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("uri: %+v\n", uri)
+		log.Printf("uri: %+v\n", uri)
 
 		opts := createClientOptions(mqttConfig.User.CliendID, uri)
 		mqttClient = mqtt.NewClient(opts)
@@ -247,7 +247,7 @@ func startSocketIOServer() {
 		id := s.ID()
 		s.Join(room)
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v    connected ID '%v'\n", clientCount, id)
+		log.Printf("clientCount: %v    connected ID '%v'\n", clientCount, id)
 
 		devices, err := initialDataForWebClient()
 		if err != nil {
@@ -262,14 +262,14 @@ func startSocketIOServer() {
 	server.OnError(namespace, func(s socketio.Conn, e error) {
 		s.Close()
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v    error %+v\n", clientCount, e)
+		log.Printf("clientCount: %v    error %+v\n", clientCount, e)
 	})
 
 	server.OnDisconnect(namespace, func(s socketio.Conn, reason string) {
 		id := s.ID()
 		s.Close()
 		clientCount := server.Count()
-		fmt.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
+		log.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
 	})
 
 	wg := sync.WaitGroup{}
