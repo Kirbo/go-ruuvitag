@@ -575,7 +575,7 @@ func subscribes() {
 	var reload = fmt.Sprintf("%s%s", channels.Reload, "*")
 	pubsub := rdb.PSubscribe(ctx, reload)
 
-	_, err := pubsub.ReceiveTimeout(ctx)
+	_, err := pubsub.ReceiveTimeout(ctx, 10)
 	if err != nil {
 		panic(err)
 	}
