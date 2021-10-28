@@ -10,7 +10,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -235,7 +234,6 @@ func GinMiddleware(allowOrigin string) gin.HandlerFunc {
 func startSocketIOServer() {
 	var err error
 
-	fmt.Printf("Hurr\n")
 	router := gin.New()
 
 	server, err = socketio.NewServer(nil)
@@ -243,10 +241,7 @@ func startSocketIOServer() {
 		panic(err)
 	}
 
-	fmt.Printf("Örr\n")
-
 	server.OnConnect(namespace, func(s socketio.Conn) error {
-		fmt.Printf("onConnect\n")
 		id := s.ID()
 		s.Join(room)
 		clientCount := server.Count()
@@ -275,24 +270,8 @@ func startSocketIOServer() {
 		fmt.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
 	})
 
-	wg := sync.WaitGroup{}
-
-	go func() {
-		fmt.Printf("Alotetaan\n")
-		err = server.Serve()
-		fmt.Printf("Servaillaan\n")
-		if err != nil {
-			fmt.Printf("PANIIKKI!\n")
-			panic(err)
-		}
-		wg.Done()
-		fmt.Printf("Oke\n")
-	}()
-	fmt.Printf("Lisäillään\n")
-	wg.Add(1)
-
+	go server.Serve()
 	defer server.Close()
-	fmt.Printf("jeppis!\n")
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
