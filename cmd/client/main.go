@@ -585,7 +585,7 @@ func handler(data ruuvitag.Measurement) {
 
 func subscribes() {
 	log.Print("Subscribe to channels...")
-	var reload = fmt.Sprintf("%s%s", channels.Reload, "*")
+	var reload = fmt.Sprintf("%s", channels.Reload)
 	pubsub := rdb.PSubscribe(ctx, reload)
 
 	_, err := pubsub.Receive(ctx)
@@ -596,7 +596,7 @@ func subscribes() {
 	ch := pubsub.Channel()
 
 	for msg := range ch {
-		re := regexp.MustCompile(fmt.Sprintf(`^%s`, channels.Reload))
+		re := regexp.MustCompile(fmt.Sprintf(`^%s$`, channels.Reload))
 		foundChannel := re.FindString(string(msg.Channel))
 		switch foundChannel {
 		case channels.Reload:
