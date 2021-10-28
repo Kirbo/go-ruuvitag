@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"regexp"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -244,7 +244,7 @@ func startSocketIOServer() {
 	}
 
 	fmt.Printf("Örr\n")
-	
+
 	server.OnConnect(namespace, func(s socketio.Conn) error {
 		fmt.Printf("onConnect\n")
 		id := s.ID()
@@ -278,19 +278,21 @@ func startSocketIOServer() {
 	wg := sync.WaitGroup{}
 
 	go func() {
+		fmt.Printf("Alotetaan\n")
 		err = server.Serve()
-		fmt.Printf("Servaillaan")
+		fmt.Printf("Servaillaan\n")
 		if err != nil {
-			fmt.Printf("PANIIKKI!")
+			fmt.Printf("PANIIKKI!\n")
 			panic(err)
 		}
 		wg.Done()
-		fmt.Printf("Oke")
+		fmt.Printf("Oke\n")
 	}()
+	fmt.Printf("Lisäillään\n")
 	wg.Add(1)
 
 	defer server.Close()
-	fmt.Printf("jeppis!")
+	fmt.Printf("jeppis!\n")
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
@@ -621,11 +623,11 @@ func main() {
 		connectRedis()
 		go subscribes()
 	}
-	
+
 	if config.EnableMQTT {
 		connectMQTT()
 	}
-	
+
 	if config.EnableSocket {
 		go startSocketIOServer()
 	}
