@@ -274,7 +274,9 @@ func startSocketIOServer() {
 	wg := sync.WaitGroup{}
 
 	go func() {
+		fmt.Printf("Ennen serve\n")
 		err = server.Serve()
+		fmt.Printf("Serve jälkeen\n")
 		if err != nil {
 			panic(err)
 		}
