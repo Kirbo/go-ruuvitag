@@ -235,12 +235,15 @@ func GinMiddleware(allowOrigin string) gin.HandlerFunc {
 func startSocketIOServer() {
 	var err error
 
+	fmt.Printf("Hurr\n")
 	router := gin.New()
 
 	server, err = socketio.NewServer(nil)
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Printf("Örr\n")
 
 	server.OnConnect(namespace, func(s socketio.Conn) error {
 		id := s.ID()
