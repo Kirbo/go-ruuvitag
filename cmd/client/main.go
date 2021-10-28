@@ -244,8 +244,9 @@ func startSocketIOServer() {
 	}
 
 	fmt.Printf("Örr\n")
-
+	
 	server.OnConnect(namespace, func(s socketio.Conn) error {
+		fmt.Printf("onConnect\n")
 		id := s.ID()
 		s.Join(room)
 		clientCount := server.Count()
@@ -278,14 +279,18 @@ func startSocketIOServer() {
 
 	go func() {
 		err = server.Serve()
+		fmt.Printf("Servaillaan")
 		if err != nil {
+			fmt.Printf("PANIIKKI!")
 			panic(err)
 		}
 		wg.Done()
+		fmt.Printf("Oke")
 	}()
 	wg.Add(1)
 
 	defer server.Close()
+	fmt.Printf("jeppis!")
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
