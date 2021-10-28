@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -270,14 +272,29 @@ func startSocketIOServer() {
 		fmt.Printf("clientCount: %v disconnected ID '%v'\n", clientCount, id)
 	})
 
-	fmt.Printf("Ennen serve()\n")
-	go server.Serve()
-	fmt.Printf("Serve() jälkeen\n")
+	wg := sync.WaitGroup{}
+
+	go func() {
+		err = server.Serve()
+		if err != nil {
+			panic(err)
+		}
+		wg.Done()
+	}()
+	wg.Add(1)
+
 	defer server.Close()
-	fmt.Printf("Server.close() jälkeen\n")
 
 	router.Use(GinMiddleware("*"))
 	router.Use(static.Serve("/", static.LocalFile("./floorplan/dist", true)))
+	router.GET("/request-client-refresh", func(c *gin.Context) {
+		var timestamp = makeTimestamp()
+		err = rdb.Publish(ctx, channels.Reload, timestamp).Err()
+		if err != nil {
+			log.Printf("request-client-refresh error: %s'\n", err)
+		}
+		c.String(http.StatusOK, "ok")
+	})
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 
