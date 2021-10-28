@@ -180,7 +180,7 @@ func subscribes() {
 	)
 	pubsub := rdbSlave.PSubscribe(ctx, devices, inserts, reload)
 
-	_, err := pubsub.Channel(ctx)
+	_, err := pubsub.ReceiveTimeout(ctx)
 	if err != nil {
 		panic(err)
 	}
