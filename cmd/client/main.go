@@ -418,6 +418,7 @@ func broadcastDevice(row string) {
 	}
 
 	broadcastMsg := broadcastMessage(device)
+	log.Print("Called broadcastDevice()")
 
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
 }
@@ -454,6 +455,8 @@ func broadcastSocketDevices() {
 	if config.LogSocket {
 		log.Print("Publishing to Socket.io...")
 	}
+
+	log.Print("Called broadcastSocketDevices()...")
 
 	for i := range config.Ruuvitags {
 		sensor := &config.Ruuvitags[i]
