@@ -208,6 +208,7 @@ func startTickers() {
 				case <-done:
 					return
 				case <-mqttTicker.C:
+					log.Print("Ticker...")
 					broadcastSocketDevices()
 				}
 			}
@@ -254,6 +255,7 @@ func startSocketIOServer() {
 			panic(err)
 		}
 
+		log.Print("On connect...")
 		server.BroadcastToRoom(namespace, room, initialEvent, devices)
 
 		return nil
@@ -403,6 +405,7 @@ func broadcastMessage(device models.Device) models.BroadcastMessage {
 func broadcastClients(event string, message string) {
 	if config.EnableSocket {
 		log.Print(fmt.Sprintf("%s - %s", event, message))
+		log.Print("Broadcast Clientsssss...")
 		server.BroadcastToRoom(namespace, room, event, message)
 	}
 }
@@ -417,6 +420,7 @@ func broadcastDevice(row string) {
 		panic(err)
 	}
 
+	log.Print("Broadcast deviceeee...")
 	broadcastMsg := broadcastMessage(device)
 
 	server.BroadcastToRoom(namespace, room, updateEvent, broadcastMsg)
@@ -569,6 +573,7 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	if config.EnableSocket && config.PushSocketImmediatelly {
+		log.Print("Blööö...")
 		go broadcastDevice(redisData)
 	}
 
