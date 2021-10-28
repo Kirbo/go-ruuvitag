@@ -572,6 +572,7 @@ func handler(data ruuvitag.Measurement) {
 	}
 
 	if config.EnableSocket && config.PushSocketImmediatelly {
+		log.Print("Woop...")
 		go broadcastDevice(redisData)
 	}
 
